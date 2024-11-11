@@ -2,21 +2,56 @@
     <div class="register-container">
         <h2 class="title">創建新帳號</h2>
         <p class="subtitle">開始您的投資之旅</p>
-        <form @submit.prevent="handleRegister">
+        <form class="loginForm" @submit.prevent="handleRegister">
             <input type="text" placeholder="用戶名" v-model="username" required />
-            <input type="email" placeholder="電子郵件" v-model="email" required />
             <input type="password" placeholder="密碼" v-model="password" required />
-            <button type="submit">註冊</button>
-            <div v-if="message">{{ message }}</div>
+            <input type="email" placeholder="電子郵件" v-model="email" required />
+            <button name="registerButton" type="submit">註冊</button>
+            <div v-if="message" :style="{color:'red'}">{{ message }}</div>
         </form>
         <p class="footer-text">
             已經有帳號了？<router-link to="/">立即登入</router-link>
         </p>
         <button @click="loginWithGoogle">使用 Google 登入</button>
+        <!-- Modal 視窗 -->
+        <div v-if="isLoading" class="modal">
+            <div class="modal-content">
+                <div class="spinner"></div>
+                <p>正在處理，請稍候...</p>
+            </div>
+        </div>
+        <!-- 註冊成功 Modal 視窗 -->
+        <div v-if="showSuccessModal" class="modal">
+            <div class="modal-content">
+                <div class="success-icon">✔</div>
+                <!-- <p>註冊成功！</p> -->
+                <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+                <button @click="closeSuccessModal">關閉</button>
+            </div>
+        </div>
+        <!-- 註冊失敗 Modal 視窗 -->
+        <div v-if="showErrorModal" class="modal">
+            <div class="modal-content">
+                <div class="error-icon">✖</div>
+                <!-- <p>註冊失敗，請稍後再試。</p> -->
+                <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+                <button @click="closeErrorModal">關閉</button>
+            </div>
+        </div>
     </div>
 </template>
   
 <script>
+import axios from 'axios';
+const defAxios = axios.create({
+  baseURL: 'http://localhost:8081',
+  timeout: 10000,
+  headers: {
+    'Authorization': localStorage.getItem('token'),
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
 export default {
     data() {
         return {
@@ -24,35 +59,57 @@ export default {
             email: '',
             password: '',
             message: '',
+            isLoading: false, // 控制 modal 顯示
+            showSuccessModal: false, // 控制註冊成功 modal
+            showErrorModal: false // 控制註冊失敗 modal
         };
     },
     methods: {
         async handleRegister() {
-            // 註冊邏輯
-            console.log("註冊按鈕被點擊", {
+            let regex = /^[A-Za-z\d]{8,30}$/;
+            if (!regex.test(this.username)) {
+                this.message = '使用者帳號必須為 8~30 個字';
+                return;
+            }
+            regex = /^[A-Za-z\d]{8,200}$/;
+            if(!regex.test(this.password)){
+                this.message = '使用者密碼最少必須為 8 個字';
+                return;
+            }
+            // 顯示 loading modal
+            this.isLoading = true;
+            // 在這裡添加實際的註冊邏輯，例如調用 API
+            await defAxios.post('/register', {
                 username: this.username,
                 email: this.email,
-                password: this.password,
-            });
-            // 在這裡添加實際的註冊邏輯，例如調用 API
-            try {
-                const response = await fetch('http://localhost:3000/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: this.email, password: this.password }),
-                });
-
-                if (response.ok) {
-                    this.message = '註冊成功，請檢查您的電子郵件以驗證帳戶！';
-                } else {
-                    const errorData = await response.json();
-                    this.message = errorData.message || '註冊失敗，請再試一次。';
+                password: this.password
+            }).then((response) => {
+                if(response!='AxiosError: Network Error'){
+                    console.log('註冊成功，回應訊息: '+response.data.message);
+                    this.message = response.data.message;
+                }else{
+                    this.message ='目前伺服器無回應，請稍後在試';
                 }
-            } catch (error) {
-                this.message = '無法聯繫伺服器，請稍後再試。';
-            }
+                this.isLoading = false;
+                this.showSuccessModal = true;
+            }).catch((error) => {
+                console.log('error: '+error);
+                if(error!='AxiosError: Network Error'){
+                    console.error('註冊失敗: '+JSON.stringify(error.response));
+                    this.message=JSON.stringify(error.response.data.message);
+                }else{
+                    this.message ='目前伺服器無回應，請稍後在試';
+                }
+                this.isLoading = false;
+                this.showErrorModal = true;
+            });
+        },
+        closeSuccessModal() {
+            this.showSuccessModal = false;
+            this.$router.push('/');
+        },
+        closeErrorModal() {
+            this.showErrorModal = false;
         },
         loginWithGoogle() {
             this.$gAuth.signIn().then(googleUser => {
@@ -86,6 +143,52 @@ export default {
     height: 100vh;
     background: linear-gradient(to right, #4facfe, #00f2fe);
     /* 漸變背景 */
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #000;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+.success-icon {
+  color: green;
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.error-icon {
+  color: red;
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .title {

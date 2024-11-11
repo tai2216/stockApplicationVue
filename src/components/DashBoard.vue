@@ -25,12 +25,13 @@
 export default {
     data() {
         return {
-            username: '使用者名稱', // 可以從登入資訊中獲取使用者名稱
+            username: localStorage.getItem('username'), // 可以從登入資訊中獲取使用者名稱
         };
     },
     methods: {
         logout() {
             // 處理登出邏輯
+            localStorage.clear();
             this.$router.push('/'); // 返回登入頁面
         },
     },

@@ -5,11 +5,19 @@
         <form @submit.prevent="handleSubmit">
             <input type="text" placeholder="用戶名" v-model="username" required />
             <input type="password" placeholder="密碼" v-model="password" required />
-            <button type="submit">登入</button>
+            <button @click="login">登入</button>
+            <div v-if="message" :style="{color:'red'}">{{ message }}</div>
         </form>
         <p class="footer-text">
             還沒有帳號？<router-link to="/register">立即註冊</router-link>
         </p>
+        <!-- Modal 視窗 -->
+        <div v-if="isLoading" class="modal">
+            <div class="modal-content">
+                <div class="spinner"></div>
+                <p>正在處理，請稍候...</p>
+            </div>
+        </div>
         <!-- Google 登入按鈕 -->
         <div class="google-login">
             <p>或使用</p>
@@ -25,37 +33,26 @@
 
 
 <script>
-// import axios from 'axios';
+import axios from 'axios';
+const defAxios = axios.create({
+  baseURL: 'http://localhost:8081',
+  timeout: 5000,
+  headers: {
+    'Authorization': localStorage.getItem('token'),
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
 export default {
     data() {
         return {
             username: '',
             password: '',
+            message:'',
+            isLoading: false, // 控制 modal 顯示
         };
     },
     methods: {
-        async handleSubmit() {
-            // 在此處處理登入邏輯（例如 API 認證請求）
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username: this.username, password: this.password }),
-                });
-
-                if (response.ok) {
-                    // 登入成功，處理成功邏輯
-                    console.log('登入成功！');
-                } else {
-                    // 處理錯誤邏輯
-                    console.error('登入失敗！');
-                }
-            } catch (error) {
-                console.error('網絡錯誤：', error);
-            }
-        },
         loginWithGoogleBackend(){
             const loginWindow = window.open('http://localhost:8081/oauth2/authorization/google', 'google-login', 'location=center,width=500,height=600');
             loginWindow.addEventListener('message', (event) => {
@@ -87,9 +84,37 @@ export default {
             }
         },
         async login() {
+            let regex = /^[A-Za-z\d]{8,30}$/;
+            if (!regex.test(this.username)) {
+                this.message = '使用者帳號必須為 8~30 個字';
+                return;
+            }
+            regex = /^[A-Za-z\d]{8,200}$/;
+            if(!regex.test(this.password)){
+                this.message = '使用者密碼最少必須為 8 個字';
+                return;
+            }
+            // 顯示 loading modal
+            this.isLoading = true;
             // 處理登入邏輯
-            // 假設登入成功
-            this.$router.push('/dashboard'); // 導航到 Dashboard 頁面
+            await defAxios.post('/login', {
+                username: this.username,
+                password: this.password
+            }).then((response) => {
+                console.log('登入成功，回應訊息: '+JSON.stringify(response));
+                if(response.status==200){
+                    localStorage.setItem('token', response.data.token);
+                    localStorage.setItem('username', response.data.username);
+                }
+                this.isLoading = false;
+                // 假設登入成功
+                this.$router.push('/dashboard'); // 導航到 Dashboard 頁面
+            }).catch((error) => {
+                console.error('註冊失敗: '+JSON.stringify(error));
+                this.isLoading = false;
+                this.message='登入失敗，請重新檢查帳號密碼是否正確';
+            });
+            
         },
     },
 };
@@ -104,6 +129,40 @@ export default {
     height: 100vh;
     background: linear-gradient(to right, #4facfe, #00f2fe);
     /* 漸變色 */
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #000;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .title {
