@@ -101,7 +101,7 @@ export default {
                 username: this.username,
                 password: this.password
             }).then((response) => {
-                console.log('登入成功，回應訊息: '+JSON.stringify(response));
+                // console.log('登入成功，回應訊息: '+JSON.stringify(response));
                 if(response.status==200){
                     localStorage.setItem('token', response.data.token);
                     localStorage.setItem('username', response.data.username);
@@ -110,9 +110,14 @@ export default {
                 // 假設登入成功
                 this.$router.push('/dashboard'); // 導航到 Dashboard 頁面
             }).catch((error) => {
-                console.error('註冊失敗: '+JSON.stringify(error));
-                this.isLoading = false;
-                this.message='登入失敗，請重新檢查帳號密碼是否正確';
+                if(error!='AxiosError: Network Error'){
+                    console.error('登入失敗: '+JSON.stringify(error));
+                    this.isLoading = false;
+                    this.message='登入失敗，請重新檢查帳號密碼是否正確';
+                }else{
+                    this.isLoading = false;
+                    this.message ='目前伺服器無回應，請稍後在試';
+                }
             });
             
         },

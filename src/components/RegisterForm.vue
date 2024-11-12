@@ -85,7 +85,7 @@ export default {
                 password: this.password
             }).then((response) => {
                 if(response!='AxiosError: Network Error'){
-                    console.log('註冊成功，回應訊息: '+response.data.message);
+                    // console.log('註冊成功，回應訊息: '+response.data.message);
                     this.message = response.data.message;
                 }else{
                     this.message ='目前伺服器無回應，請稍後在試';

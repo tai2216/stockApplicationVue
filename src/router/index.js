@@ -22,26 +22,31 @@ const routes = [
         path: '/dashboard',
         name: 'dashboard',
         component: DashBoard,
+        meta: { requiresAuth: true }
     },
     {
         path: '/stocks',
         name: 'stocks-List',
         component: StocksList,
+        meta: { requiresAuth: true }
     },
     {
         path: '/portfolio',
         name: 'portfolio-List',
         component: MyPortfolio,
+        meta: { requiresAuth: true }
     },
     {
         path: '/transactions',
         name: 'TradeHistory-List',
         component: TradeHistory,
+        meta: { requiresAuth: true }
     },
     {
         path: '/auth/callback',
         name: 'AuthCallback',
-        component: AuthCallback
+        component: AuthCallback,
+        meta: { requiresAuth: true }
     },
 ];
 
