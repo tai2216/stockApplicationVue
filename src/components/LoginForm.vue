@@ -38,10 +38,9 @@ const defAxios = axios.create({
   baseURL: 'http://localhost:8081',
   timeout: 5000,
   headers: {
-    'Authorization': localStorage.getItem('token'),
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
 });
 export default {
     data() {
@@ -101,10 +100,13 @@ export default {
                 username: this.username,
                 password: this.password
             }).then((response) => {
-                // console.log('登入成功，回應訊息: '+JSON.stringify(response));
+                console.log('登入成功，回應訊息: '+JSON.stringify(response.data));
                 if(response.status==200){
+                    localStorage.clear();
                     localStorage.setItem('token', response.data.token);
                     localStorage.setItem('username', response.data.username);
+                    localStorage.setItem('userId', response.data.userId);
+                    localStorage.setItem('role', response.data.role);
                 }
                 this.isLoading = false;
                 // 假設登入成功
@@ -121,6 +123,11 @@ export default {
             });
             
         },
+    },
+    created() {
+        if(localStorage.getItem('username')!='' && localStorage.getItem('token')!='' ){
+            this.$router.push('/dashboard');
+        }
     },
 };
 </script>

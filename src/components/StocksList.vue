@@ -1,7 +1,9 @@
 <template>
     <div class="stocks">
         <h2 class="title">股票列表</h2>
-        <input type="text" v-model="searchTerm" placeholder="搜尋股票..." @input="filterStocks" class="search-input" />
+        <form @submit.prevent="searchStock">
+            <input type="text" v-model="keyWord" placeholder="搜尋股票..." class="search-input" />
+        </form>
 
         <table class="stocks-table">
             <thead>
@@ -34,18 +36,24 @@
                     <td>{{ t.Name }}</td>
                     <td>{{ t.PreviousDayPrice }}</td>
                     <td>{{ t.LastTradingDay }}</td>
-                    <td>
+                    <!-- <td>
                         <button class="detail-button" @click="viewDetails(stock)">詳情</button>
+                    </td> -->
+                    <td>
+                        <button class="buy-button" @click="openTradeModal('/buyStock',t)">買進</button>
+                    </td>
+                    <td>
+                        <button class="sell-button" @click="openTradeModal('/sellStock',t)">賣出</button>
                     </td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8">共 {{ pageObj.totalElements }} 檔股票</td>
+                    <td colspan="8">共 {{ searchMode==false?pageObj.totalElements:pageObj.numberOfElements }} 檔股票</td>
                 </tr>
             </tfoot>    
         </table>
-        <div class="pagination">
+        <div v-if="searchMode!=true" class="pagination">
             <button @click="prevPage" :disabled="currentPage <= 0">上一頁</button>
             <span>第 {{ currentPage+1 }} 頁，共 {{ totalPages }} 頁</span>
             <button @click="nextPage" :disabled="currentPage >= totalPages">下一頁</button>
@@ -60,6 +68,28 @@
         <div v-if="twt84u.length === 0" class="no-results">
             沒有找到相關股票
         </div>
+            <!-- 交易視窗 -->
+            <div v-if="showTradeModal" class="modal">
+            <div class="modal-content">
+                <h2>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}</h2>
+                <h3>{{ selectedStock.Name }}</h3>
+                <input type="number" v-model.number="tradeQuantity" placeholder="輸入數量" />(單位:股)
+                <button @click="buyOrSellStock(buyOrSellUrl,tradeQuantity,selectedStock.Code,selectedStock.LastTradingDay)">確認</button>
+                <button @click="closeTradeModal">取消</button>
+            </div>
+        </div>
+        <div v-if="isLoading" class="modal">
+            <div class="modal-content">
+                <div class="spinner"></div>
+                <p>正在處理，請稍候...</p>
+            </div>
+        </div>
+        <!-- 快閃訊息 -->
+        <transition name="fade">
+            <div v-if="showFlashMessage" :class="['flash-message', flashMessageType]">
+                {{ flashMessage }}
+            </div>
+        </transition>
     </div>
 </template>
   
@@ -68,11 +98,7 @@ import BackButton from '@/components/BackButton.vue';
 import axios from 'axios';
 const defAxios = axios.create({
   baseURL: 'http://localhost:8081',
-  timeout: 10000,
-  headers: {
-    'Authorization': localStorage.getItem('token'),
-    'Accept': 'application/json'
-  }
+  timeout: 10000
 });
 export default {
     components: {
@@ -81,7 +107,7 @@ export default {
     name: 'StocksList',
     data() {
         return {
-            searchTerm: '',
+            searchMode: false,
             message: '',
             twt84u:[],
             sort: 'Code',
@@ -93,18 +119,23 @@ export default {
             goToPageNumber: null,
             sortKey: '',
             sortOrder: 1, // 1 為升序，-1 為降序
-            stocks: [
-                { name: 'Apple Inc.', symbol: 'AAPL', price: 150.00, change: 1.5 },
-                { name: 'Microsoft Corp.', symbol: 'MSFT', price: 280.00, change: -0.5 },
-                { name: 'Google LLC', symbol: 'GOOGL', price: 2700.00, change: 2.3 },
-                // 其他股票資料...
-            ],
-            filteredStocks: [],
+            showTradeModal: false,
+            selectedStock: null,
+            tradeQuantity: 0,
+            buyOrSellUrl:'',
+            isLoading: false,
+            showFlashMessage: false,
+            flashMessage: '',
+            flashMessageType: ''
         };
     },
     methods: {
         async queryStock(){
             await defAxios.get('/queryStockInfo',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
                 params: {
                     page: this.currentPage,
                     size: this.itemsPerPage,
@@ -127,6 +158,80 @@ export default {
             .catch(error => {
                 console.error('Error: '+JSON.stringify(error.response));
             });
+        },
+        searchStock(){
+            if(this.keyWord==''){
+                this.queryStock();
+                this.searchMode=false;
+                return;
+            }
+            this.searchMode=true;
+            defAxios.get('/searchStock',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params: {
+                    keyWord: this.keyWord
+                }
+            })
+            .then(response => {
+                if(response!='AxiosError: Network Error'){
+                    console.log(JSON.stringify(response.data));
+                    this.twt84u = response.data.data.content;
+                    this.pageObj = response.data.data;
+                    this.totalPages = this.pageObj.totalPages;
+                    // console.log('註冊成功，回應訊息: '+response.data.message);
+                    this.message = response.data.message;
+                }else{
+                    this.message ='目前伺服器無回應，請稍後在試';
+                }
+            })
+            .catch(error => {
+                console.error('Error: '+JSON.stringify(error.response));
+            });
+        },
+        buyOrSellStock(url,quantity,stockCode,date){
+            this.closeTradeModal();
+            this.isLoading = true;
+            defAxios.post(url,{
+                // 在post方法裡面當傳入第三個config Object時，這一塊就是request body須注意
+            },{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params:{
+                    userId: parseInt(localStorage.getItem('userId')),
+                    quantity: quantity,
+                    stockCode: stockCode,
+                    date: date
+                }
+            }
+            ).then((response)=>{
+                console.log(JSON.stringify(response.data));
+                this.flashMessage = response.data.message;
+                this.flashMessageType = 'success';
+            }).catch((error)=>{
+                console.error(JSON.stringify(error.response));
+                let err = error.response.data.error;
+                this.flashMessage = error.response.data.message +' '+ (err!=null? err : '');
+                this.flashMessageType = 'error';
+            });
+            this.isLoading = false;
+            this.showFlashMessage = true;
+            setTimeout(() => {
+                this.showFlashMessage = false;
+            }, 1500); // 1.5 秒後隱藏快閃訊息
+        },
+        openTradeModal(url,stock) {
+            this.buyOrSellUrl = url;
+            this.selectedStock = stock;
+            this.tradeQuantity = 1000;
+            this.showTradeModal = true;
+        },
+        closeTradeModal() {
+            this.showTradeModal = false;
         },
         nextPage() {
             if (this.currentPage < this.totalPages) {
@@ -323,6 +428,101 @@ export default {
     /* 中心对齐 */
     margin-top: 20px;
     /* 上边距 */
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.modal-content input {
+    margin-bottom: 10px;
+    padding: 5px;
+    width: 100%;
+}
+
+.modal-content button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-content button:first-of-type {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-content button:last-of-type {
+    background-color: #dc3545;
+    color: white;
+}
+
+.modal-content-spinner {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #000;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.flash-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    z-index: 1000;
+    color: white;
+    font-size: 18px;
+    opacity: 1;
+    transition: opacity 1s ease-out;
+}
+
+.flash-message.success {
+    background-color: #3ac25a;
+}
+
+.flash-message.error {
+    background-color: #e75766;
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 1s;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+    opacity: 0;
 }
 </style>
   

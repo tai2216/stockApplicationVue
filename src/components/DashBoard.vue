@@ -25,16 +25,35 @@
 export default {
     data() {
         return {
-            username: localStorage.getItem('username'), // 可以從登入資訊中獲取使用者名稱
+            username: '', // 可以從登入資訊中獲取使用者名稱
         };
     },
     methods: {
+        handleStorageEvent(event) {
+            if (event.key === 'logout') {
+                this.$router.push('/'); // 返回登入頁面
+            }
+        },
         logout() {
             // 處理登出邏輯
             localStorage.clear();
+            localStorage.setItem('logout', Date.now());
             this.$router.push('/'); // 返回登入頁面
         },
     },
+    created() {
+        this.username = localStorage.getItem('username');
+        // 監聽 localStorage 的變化
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'logout') {
+                this.$router.push('/'); // 返回登入頁面
+            }
+        });
+    },
+    beforeUnmount () {
+        // 移除事件監聽器
+        window.removeEventListener('storage', this.handleStorageEvent);
+    }
 };
 </script>
   

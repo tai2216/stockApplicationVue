@@ -12,6 +12,17 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import googleAuth from './googleAuth.js';
+/* import the fontawesome core */
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+/* import specific icons */
+import { faUserSecret } from '@fortawesome/free-solid-svg-icons'
+
+/* add icons to the library */
+library.add(faUserSecret)
 router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth) {
         if (localStorage.getItem('username') != null && localStorage.getItem('token') != null) {
@@ -30,6 +41,7 @@ router.beforeEach((to, from, next) => {
 })
 const app = createApp(App);
 
+app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
 googleAuth(app); // 使用 googleAuth 插件
 app.mount('#app');
