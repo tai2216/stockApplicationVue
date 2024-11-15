@@ -1,18 +1,6 @@
 <template>
+    <TopNavBar></TopNavBar>
     <div class="dashboard">
-        <header>
-            <h1>歡迎回來，{{ username }}！</h1>
-            <button @click="logout">登出</button>
-        </header>
-
-        <nav class="navigation">
-            <ul>
-                <li><router-link to="/stocks">查看股票</router-link></li>
-                <li><router-link to="/portfolio">我的投資組合</router-link></li>
-                <li><router-link to="/transactions">交易歷史</router-link></li>
-            </ul>
-        </nav>
-
         <main>
             <h2>市場概況</h2>
             <p>這裡顯示市場的最新資訊和趨勢。</p>
@@ -22,11 +10,15 @@
 </template>
   
 <script>
+import TopNavBar from './TopNavBar.vue';
 export default {
     data() {
         return {
             username: '', // 可以從登入資訊中獲取使用者名稱
         };
+    },
+    components: {
+        TopNavBar
     },
     methods: {
         handleStorageEvent(event) {
@@ -49,6 +41,8 @@ export default {
                 this.$router.push('/'); // 返回登入頁面
             }
         });
+        // TopNavBar.data.apply(TopNavBar.methods.refreshAccountBalance());
+        // TopNavBar.methods.refreshAccountBalance();
     },
     beforeUnmount () {
         // 移除事件監聽器

@@ -16,6 +16,9 @@
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
     "google-auth-library": "^9.14.2",
+    "jquery": "^3.7.0",
+    "mitt": "^3.0.1",
+    "typescript": "^5.1.6",
     "vue": "^3.2.13",
     "vue-router": "^4.4.5",
     "vue3-google-oauth2": "^1.0.7"

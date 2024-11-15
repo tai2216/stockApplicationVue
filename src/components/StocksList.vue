@@ -1,4 +1,5 @@
 <template>
+    <TopNavBar :key="componentKey"/>
     <div class="stocks">
         <h2 class="title">股票列表</h2>
         <form @submit.prevent="searchStock">
@@ -8,11 +9,6 @@
         <table class="stocks-table">
             <thead>
                 <tr>
-                    <!-- <th>股票名稱</th>
-                    <th>股票代碼</th>
-                    <th>最新價格</th>
-                    <th>變動 (%)</th>
-                    <th>查看詳情</th> -->
                     <th @click="sortStocks('Code')">股票代碼<span v-if="sortKey === 'Code' | sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('Name')">股票名稱<span v-if="sortKey === 'Name'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('PreviousDayPrice')">收盤價(單位:一股)<span v-if="sortKey === 'PreviousDayPrice'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
@@ -20,25 +16,11 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- <tr v-for="stock in filteredStocks" :key="stock.symbol">
-                    <td>{{ stock.name }}</td>
-                    <td>{{ stock.symbol }}</td>
-                    <td>{{ stock.price.toFixed(2) }}</td>
-                    <td :class="{ 'positive': stock.change >= 0, 'negative': stock.change < 0 }">
-                        {{ stock.change.toFixed(2) }}%
-                    </td>
-                    <td>
-                        <button class="detail-button" @click="viewDetails(stock)">詳情</button>
-                    </td>
-                </tr> -->
                 <tr v-for="t in twt84u" :key="t.Code">
                     <td>{{ t.Code }}</td>
                     <td>{{ t.Name }}</td>
                     <td>{{ t.PreviousDayPrice }}</td>
                     <td>{{ t.LastTradingDay }}</td>
-                    <!-- <td>
-                        <button class="detail-button" @click="viewDetails(stock)">詳情</button>
-                    </td> -->
                     <td>
                         <button class="buy-button" @click="openTradeModal('/buyStock',t)">買進</button>
                     </td>
@@ -56,7 +38,7 @@
         <div v-if="searchMode!=true" class="pagination">
             <button @click="prevPage" :disabled="currentPage <= 0">上一頁</button>
             <span>第 {{ currentPage+1 }} 頁，共 {{ totalPages }} 頁</span>
-            <button @click="nextPage" :disabled="currentPage >= totalPages">下一頁</button>
+            <button @click="nextPage" :disabled="((currentPage==0&&totalPages==1) | currentPage+1 >= totalPages)">下一頁</button>
             <input type="number" v-model.number="goToPageNumber" min="1" :max="totalPages" placeholder="頁數" />
             <button @click="goToPage">跳轉</button>
         </div>
@@ -74,7 +56,7 @@
                 <h2>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}</h2>
                 <h3>{{ selectedStock.Name }}</h3>
                 <input type="number" v-model.number="tradeQuantity" placeholder="輸入數量" />(單位:股)
-                <button @click="buyOrSellStock(buyOrSellUrl,tradeQuantity,selectedStock.Code,selectedStock.LastTradingDay)">確認</button>
+                <button @click="buyOrSellStock(buyOrSellUrl,tradeQuantity,selectedStock.Code)">確認</button>
                 <button @click="closeTradeModal">取消</button>
             </div>
         </div>
@@ -87,13 +69,15 @@
         <!-- 快閃訊息 -->
         <transition name="fade">
             <div v-if="showFlashMessage" :class="['flash-message', flashMessageType]">
-                {{ flashMessage }}
+                <p>{{ refreshMessage }}</p>
+                <p>{{ flashMessage }}</p>
             </div>
         </transition>
     </div>
 </template>
   
 <script>
+import TopNavBar from '@/components/TopNavBar.vue';
 import BackButton from '@/components/BackButton.vue';
 import axios from 'axios';
 const defAxios = axios.create({
@@ -103,6 +87,7 @@ const defAxios = axios.create({
 export default {
     components: {
         BackButton,
+        TopNavBar
     },
     name: 'StocksList',
     data() {
@@ -126,7 +111,8 @@ export default {
             isLoading: false,
             showFlashMessage: false,
             flashMessage: '',
-            flashMessageType: ''
+            flashMessageType: '',
+            refreshMessage:`三秒後刷新頁面...\n\r`,
         };
     },
     methods: {
@@ -191,7 +177,7 @@ export default {
                 console.error('Error: '+JSON.stringify(error.response));
             });
         },
-        buyOrSellStock(url,quantity,stockCode,date){
+        buyOrSellStock(url,quantity,stockCode){
             this.closeTradeModal();
             this.isLoading = true;
             defAxios.post(url,{
@@ -204,8 +190,7 @@ export default {
                 params:{
                     userId: parseInt(localStorage.getItem('userId')),
                     quantity: quantity,
-                    stockCode: stockCode,
-                    date: date
+                    stockCode: stockCode
                 }
             }
             ).then((response)=>{
@@ -222,7 +207,8 @@ export default {
             this.showFlashMessage = true;
             setTimeout(() => {
                 this.showFlashMessage = false;
-            }, 1500); // 1.5 秒後隱藏快閃訊息
+                window.location.reload();
+            }, 3000); // 3 秒後隱藏快閃訊息
         },
         openTradeModal(url,stock) {
             this.buyOrSellUrl = url;
@@ -270,18 +256,7 @@ export default {
                 'sorted-asc': this.sortKey === key && this.sortOrder === 1,
                 'sorted-desc': this.sortKey === key && this.sortOrder === -1
             };
-        },
-        filterStocks() {
-            this.filteredStocks = this.stocks.filter(stock =>
-                stock.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                stock.symbol.toLowerCase().includes(this.searchTerm.toLowerCase())
-            );
-        },
-        viewDetails(stock) {
-            // 可以導航到詳細資訊頁面
-            alert(`查看 ${stock.name} 的詳細資訊`);
-            // 例如：this.$router.push(`/stocks/${stock.symbol}`);
-        },
+        }
     },
     created() {
         this.filteredStocks = this.stocks; // 初始化顯示所有股票
@@ -445,6 +420,7 @@ export default {
 .modal-content {
     background-color: white;
     padding: 20px;
+    width: 30%;
     border-radius: 5px;
     text-align: center;
 }
@@ -452,7 +428,10 @@ export default {
 .modal-content input {
     margin-bottom: 10px;
     padding: 5px;
-    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-content button {
