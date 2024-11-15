@@ -1,48 +1,68 @@
 <template>
     <div class="register-container">
-        <h2 class="title">創建新帳號</h2>
-        <p class="subtitle">開始您的投資之旅</p>
-        <form class="loginForm" @submit.prevent="handleRegister">
-            <input type="text" placeholder="用戶名" v-model="username" required />
-            <input type="password" placeholder="密碼" v-model="password" required />
-            <input type="email" placeholder="電子郵件" v-model="email" required />
-            <button name="registerButton" type="submit">註冊</button>
-            <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+        <form class="login-form" @submit.prevent="handleRegister" >
+            <h2 class="title">創建新帳號</h2>
+            <p class="subtitle">開始您的投資之旅</p>
+            <div>
+                <img alt="" src="@/assets/img/user-solid.svg" width="20" height="20"/>
+                <input type="text" placeholder="用戶名" v-model="username" required class="input-field">
+            </div>
+            <div>
+                <img alt="" src="@/assets/img/key-solid.svg" width="20" height="20"/>
+                <input type="password" placeholder="密碼" v-model="password" required class="input-field"/>
+            </div>
+            <div>
+                <img alt="" src="@/assets/img/envelope-solid.svg" width="20" height="20"/>
+                <input type="email" placeholder="電子郵件" v-model="email" required class="input-field"/>
+            </div>
+            <button name="register-button" type="submit" class="register-button">註冊</button>
+            <transition name ="fade">
+                <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+            </transition>
+            <p class="footer-text">
+                <img alt="" src="@/assets/img/circle-info-solid.svg" width="20"
+                height="20">
+                已經有帳號了？<router-link to="/">立即登入</router-link>
+            </p>
+            <button @click="loginWithGoogle" class="google-button">使用 Google 登入</button>
         </form>
-        <p class="footer-text">
-            已經有帳號了？<router-link to="/">立即登入</router-link>
-        </p>
-        <button @click="loginWithGoogle">使用 Google 登入</button>
         <!-- Modal 視窗 -->
-        <div v-if="isLoading" class="modal">
-            <div class="modal-content">
-                <div class="spinner"></div>
-                <p>正在處理，請稍候...</p>
+        <transition name ="fade">
+            <div v-if="isLoading" class="modal">
+                <div class="modal-content">
+                    <div class="spinner"></div>
+                    <p>正在處理，請稍候...</p>
+                </div>
             </div>
-        </div>
-        <!-- 註冊成功 Modal 視窗 -->
-        <div v-if="showSuccessModal" class="modal">
-            <div class="modal-content">
-                <div class="success-icon">✔</div>
-                <!-- <p>註冊成功！</p> -->
-                <div v-if="message" :style="{color:'red'}">{{ message }}</div>
-                <button @click="closeSuccessModal">關閉</button>
+        </transition>
+        <transition>
+            <!-- 註冊成功 Modal 視窗 -->
+            <div v-if="showSuccessModal" class="modal">
+                <div class="modal-content">
+                    <div class="success-icon">✔</div>
+                    <!-- <p>註冊成功！</p> -->
+                    <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+                    <button class="close-button" @click="closeSuccessModal">關閉</button>
+                </div>
             </div>
-        </div>
-        <!-- 註冊失敗 Modal 視窗 -->
-        <div v-if="showErrorModal" class="modal">
-            <div class="modal-content">
-                <div class="error-icon">✖</div>
-                <!-- <p>註冊失敗，請稍後再試。</p> -->
-                <div v-if="message" :style="{color:'red'}">{{ message }}</div>
-                <button @click="closeErrorModal">關閉</button>
+        </transition>
+        <transition>
+            <!-- 註冊失敗 Modal 視窗 -->
+            <div v-if="showErrorModal" class="modal">
+                <div class="modal-content">
+                    <div class="error-icon">✖</div>
+                    <!-- <p>註冊失敗，請稍後再試。</p> -->
+                    <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+                    <button class="close-button" @click="closeErrorModal">關閉</button>
+                </div>
             </div>
-        </div>
+        </transition>
     </div>
 </template>
   
 <script>
 import axios from 'axios';
+import '@/assets/css/loginAndRegister.css';
 const defAxios = axios.create({
   baseURL: 'http://localhost:8081',
   timeout: 10000,
@@ -133,114 +153,4 @@ export default {
     },
 };
 </script>
-  
-<style scoped>
-.register-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    /* 漸變背景 */
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  text-align: center;
-}
-
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #000;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-.success-icon {
-  color: green;
-  font-size: 40px;
-  margin-bottom: 10px;
-}
-
-.error-icon {
-  color: red;
-  font-size: 40px;
-  margin-bottom: 10px;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.title {
-    font-size: 2.5rem;
-    /* 大字體 */
-    font-weight: bold;
-    /* 粗體 */
-    color: #ffffff;
-    /* 白色 */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    /* 文字陰影 */
-}
-
-.subtitle {
-    font-size: 1.5rem;
-    /* 中字體 */
-    color: #ffffff;
-    /* 白色 */
-    margin-bottom: 20px;
-    /* 底部間距 */
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-}
-
-input {
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-button {
-    padding: 10px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-.footer-text {
-    margin-top: 20px;
-    color: #ffffff;
-    /* 白色 */
-}
-</style>
   

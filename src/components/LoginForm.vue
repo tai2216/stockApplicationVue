@@ -1,39 +1,52 @@
 <template>
     <div class="login-container">
-        <h2>歡迎來到虛擬股票平台！</h2>
-        <p>開啟您的投資旅程</p>
-        <form @submit.prevent="handleSubmit">
-            <input type="text" placeholder="用戶名" v-model="username" required />
-            <input type="password" placeholder="密碼" v-model="password" required />
-            <button @click="login">登入</button>
-            <div v-if="message" :style="{color:'red'}">{{ message }}</div>
-        </form>
-        <p class="footer-text">
-            還沒有帳號？<router-link to="/register">立即註冊</router-link>
-        </p>
-        <!-- Modal 視窗 -->
-        <div v-if="isLoading" class="modal">
-            <div class="modal-content">
-                <div class="spinner"></div>
-                <p>正在處理，請稍候...</p>
+        <form @submit.prevent="handleSubmit" class="login-form">
+            <h2>歡迎來到Stock Panda！</h2>
+            <p>開啟您的投資旅程</p>
+            <div>
+                <img alt="" src="@/assets/img/user-solid.svg" width="20" height="20"/>
+                <input type="text" placeholder="用戶名" v-model="username" required class="input-field">
             </div>
-        </div>
-        <!-- Google 登入按鈕 -->
-        <div class="google-login">
-            <p>或使用</p>
-            <button @click="loginWithGoogle" class="google-button">
-                Google 登入
-            </button>
-            <button @click="loginWithGoogleBackend" class="google-button">
-                Google 登入(後端測試)
-            </button>
-        </div>
+            <div>
+                <img alt="" src="@/assets/img/key-solid.svg" width="20" height="20"/>
+                <input type="password" placeholder="密碼" v-model="password" required class="input-field"/>
+            </div>
+            <button @click="login" class="login-button">登入</button>
+            <transition name ="fade">
+                <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+            </transition>
+            <p class="footer-text">
+                <img alt="" src="@/assets/img/circle-info-solid.svg" width="20"
+                height="20">
+                還沒有帳號？<router-link to="/register">立即註冊</router-link>
+            </p>
+            <!-- Google 登入按鈕 -->
+            <div class="google-login">
+                <p>或使用</p>
+                <button @click="loginWithGoogle" class="google-button">
+                    Google 登入
+                </button>
+                <!-- <button @click="loginWithGoogleBackend" class="google-button">
+                    Google 登入(後端測試)
+                </button> -->
+            </div>
+        </form>
+        <!-- Modal 視窗 -->
+         <transition name ="fade">
+             <div v-if="isLoading" class="modal">
+                 <div class="modal-content">
+                     <div class="spinner"></div>
+                     <p>正在處理，請稍候...</p>
+                 </div>
+             </div>
+         </transition>
     </div>
 </template>
 
 
 <script>
 import axios from 'axios';
+import '@/assets/css/loginAndRegister.css';
 const defAxios = axios.create({
   baseURL: 'http://localhost:8081',
   timeout: 5000,
@@ -132,119 +145,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.login-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    /* 漸變色 */
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  text-align: center;
-}
-
-.spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #000;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.title {
-    font-size: 2.5rem;
-    /* 大字體 */
-    font-weight: bold;
-    /* 粗體 */
-    color: #ffffff;
-    /* 白色 */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    /* 文字陰影 */
-}
-
-.subtitle {
-    font-size: 1.5rem;
-    /* 中字體 */
-    color: #ffffff;
-    /* 白色 */
-    margin-bottom: 20px;
-    /* 底部間距 */
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-}
-
-input {
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-button {
-    padding: 10px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-.footer-text {
-    margin-top: 20px;
-    color: #555;
-}
-
-.google-login {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.google-button {
-    padding: 10px;
-    background-color: #4285F4;
-    /* Google 的藍色 */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.google-button:hover {
-    background-color: #357ae8;
-    /* 深一點的藍色 */
-}
-</style>
