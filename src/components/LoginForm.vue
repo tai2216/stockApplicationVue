@@ -100,7 +100,7 @@ export default {
                 username: this.username,
                 password: this.password
             }).then((response) => {
-                console.log('登入成功，回應訊息: '+JSON.stringify(response.data));
+                // console.log('登入成功，回應訊息: '+JSON.stringify(response.data));
                 if(response.status==200){
                     localStorage.clear();
                     localStorage.setItem('token', response.data.token);

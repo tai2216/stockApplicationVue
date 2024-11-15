@@ -1,7 +1,8 @@
 <template>
     <nav class="navbar navbar-expand-lg navbar-light bg-light ">
+        <div style="margin-left: 5%;"></div>
         <a class="navbar-brand" href="http://localhost:8080/"> <img alt="" src="@/assets/landmark-solid.svg" width="30"
-                height="30"> 虛擬股票交易平台</a>
+                height="30">StockPanda - 股票模擬交易平台</a>
         <nav class="top-nav-bar">
             <ul class="nav-list">
                 <li><router-link to="/stocks">查看股票</router-link></li>
@@ -78,7 +79,7 @@
                         userId: parseInt(this.userId)
                     }
                 }).then((response)=>{
-                    console.log(JSON.stringify(response.data));
+                    // console.log(JSON.stringify(response.data));
                     this.accountBalance = response.data.data.balance!=null? Number(response.data.data.balance).toLocaleString():'0';
                 }).catch((error)=>{
                     console.log('error:'+JSON.stringify(error.response));
@@ -88,6 +89,7 @@
             }
         },
         created() {
+            document.title = "StockPanda - 股票模擬交易平台";
             this.userId = localStorage.getItem('userId');
             this.username = localStorage.getItem('username');
             // 監聽 localStorage 的變化
