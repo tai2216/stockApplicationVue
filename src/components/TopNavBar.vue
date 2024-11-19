@@ -2,13 +2,15 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div style="margin-left: 5%;"></div>
         <a class="navbar-brand" href="http://localhost:8080/"> <img alt="" src="@/assets/img/landmark-solid.svg" width="30"
-                height="30">StockPanda - 股票模擬交易平台</a>
+                height="30">
+            <span>StockPanda - 股票模擬交易平台</span>
+        </a>
         <nav class="top-nav-bar">
             <ul class="nav-list">
-                <li><router-link to="/stocks">查看股票</router-link></li>
-                <li><router-link to="/portfolio">我的投資組合</router-link></li>
-                <li><router-link to="/transactions">交易歷史</router-link></li>
-                <li>帳戶餘額: $ {{ accountBalance }}</li>
+                <li class="brand-text"><router-link to="/stocks">查看股票</router-link></li>
+                <li class="brand-text"><router-link to="/portfolio">我的投資組合</router-link></li>
+                <li class="brand-text"><router-link to="/transactions">交易歷史</router-link></li>
+                <li class="brand-text">帳戶餘額: $ {{ accountBalance }}</li>
             </ul>
         </nav>
         <div class="navbar-container">    
@@ -191,5 +193,18 @@
     height: 1px;
     background: #333; /* 設置橫線顏色 */
     /* background-image: linear-gradient(to right, #ccc, #333, #ccc); 添加漸變效果 */
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive; /* 使用可愛的字體 */
+    font-size: 24px; /* 調整字體大小 */
+    color: #040304; /* 設置字體顏色 */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* 添加文字陰影 */
+}
+.brand-text {
+    margin-left: 10px; /* 添加間距 */
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive; /* 使用可愛的字體 */
+    font-size: 18px; /* 調整字體大小 */
 }
 </style>

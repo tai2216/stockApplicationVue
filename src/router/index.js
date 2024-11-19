@@ -6,7 +6,6 @@ import DashBoard from '@/components/DashBoard.vue'; // 登入後頁面
 import StocksList from '@/components/StocksList.vue'; // 股票頁面
 import MyPortfolio from '@/components/MyPortfolio.vue'; // 我的投資組合頁面
 import TradeHistory from '@/components/TradeHistory.vue'; // 交易歷史頁面
-import AuthCallback from '@/components/AuthCallback.vue'; // 引入 AuthCallback 組件
 const routes = [
     {
         path: '/',
@@ -40,12 +39,6 @@ const routes = [
         path: '/transactions',
         name: 'TradeHistory-List',
         component: TradeHistory,
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/auth/callback',
-        name: 'AuthCallback',
-        component: AuthCallback,
         meta: { requiresAuth: true }
     },
 ];

@@ -78,6 +78,7 @@
   
 <script>
 import '@/assets/css/common.css';
+import '@/assets/css/globalTable.css';
 import TopNavBar from '@/components/TopNavBar.vue';
 import BackButton from '@/components/BackButton.vue';
 import axios from 'axios';

@@ -1,0 +1,73 @@
+/* global.css */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 18px;
+    text-align: left;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #e9e9e9;
+}
+
+tfoot {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.buy-button,
+.sell-button,
+.details-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buy-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.buy-button:hover {
+    background-color: #218838;
+}
+
+.sell-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.sell-button:hover {
+    background-color: #c82333;
+}
+
+.details-button {
+    background-color: #787c79;
+    color: white;
+}
+
+.details-button:hover {
+    background-color: #475f4c;
+}

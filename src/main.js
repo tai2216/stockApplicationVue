@@ -40,7 +40,8 @@ router.beforeEach((to, from, next) => {
     }
 })
 const app = createApp(App);
-
+//後端的url全域變數
+app.config.globalProperties.$backendUrlPrefix = 'http://localhost:8081';
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
 // googleAuth(app); // 使用 googleAuth 插件

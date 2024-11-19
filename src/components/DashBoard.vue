@@ -119,7 +119,7 @@ export default {
   
 <style scoped>
 .dashboard {
-    padding: 20px;
+    padding: 50px;
     min-height: 100vh;
     /* 確保背景填滿整個視口 */
     background: linear-gradient(to bottom right, rgba(0, 123, 255, 0.5), rgba(255, 255, 255, 0.8)),

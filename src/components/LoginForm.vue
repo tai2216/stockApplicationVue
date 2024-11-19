@@ -5,7 +5,7 @@
             <p>開啟您的投資旅程</p>
             <div>
                 <img alt="" src="@/assets/img/user-solid.svg" width="20" height="20"/>
-                <input type="text" autocomplete="username" placeholder="用戶名" v-model="username" required class="input-field">
+                <input type="text" autocomplete="username" placeholder="帳號" v-model="username" required class="input-field">
             </div>
             <div>
                 <img alt="" src="@/assets/img/key-solid.svg" width="20" height="20"/>
@@ -23,14 +23,7 @@
             <!-- Google 登入按鈕 -->
             <div class="google-login">
                 <p>或使用</p>
-                <!-- <button @click="loginWithGoogle" class="google-button">
-                    Google 登入
-                </button> -->
-                
-                <!-- <button @click="loginWithGoogleBackend" class="google-button">
-                    Google 登入(後端測試)
-                </button> -->
-                <button id="googleButton" @click.prevent="googleLoginModal"></button>
+                <div id="googleButton" @click.prevent="googleLoginModal"></div>
             </div>
         </form>
         <!-- Modal 視窗 -->
@@ -98,7 +91,7 @@ export default {
                     'Accept': 'application/json'
                 },
             }).then((response) => {
-                console.log('google 登入測試: '+JSON.stringify(response.data.data));
+                console.log('google 登入成功: '+JSON.stringify(response.data));
                 if(response.status==200){
                     localStorage.clear();
                     localStorage.setItem('token', response.data.token);
