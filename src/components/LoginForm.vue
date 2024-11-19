@@ -5,11 +5,11 @@
             <p>開啟您的投資旅程</p>
             <div>
                 <img alt="" src="@/assets/img/user-solid.svg" width="20" height="20"/>
-                <input type="text" placeholder="用戶名" v-model="username" required class="input-field">
+                <input type="text" autocomplete="username" placeholder="用戶名" v-model="username" required class="input-field">
             </div>
             <div>
                 <img alt="" src="@/assets/img/key-solid.svg" width="20" height="20"/>
-                <input type="password" placeholder="密碼" v-model="password" required class="input-field"/>
+                <input type="password" autocomplete="current-password" placeholder="密碼" v-model="password" required class="input-field"/>
             </div>
             <button @click="login" class="login-button">登入</button>
             <transition name ="fade">
@@ -23,12 +23,14 @@
             <!-- Google 登入按鈕 -->
             <div class="google-login">
                 <p>或使用</p>
-                <button @click="loginWithGoogle" class="google-button">
+                <!-- <button @click="loginWithGoogle" class="google-button">
                     Google 登入
-                </button>
+                </button> -->
+                
                 <!-- <button @click="loginWithGoogleBackend" class="google-button">
                     Google 登入(後端測試)
                 </button> -->
+                <button id="googleButton" @click.prevent="googleLoginModal"></button>
             </div>
         </form>
         <!-- Modal 視窗 -->
@@ -55,6 +57,7 @@ const defAxios = axios.create({
     'Accept': 'application/json'
   },
 });
+
 export default {
     data() {
         return {
@@ -65,35 +68,58 @@ export default {
         };
     },
     methods: {
-        loginWithGoogleBackend(){
-            const loginWindow = window.open('http://localhost:8081/oauth2/authorization/google', 'google-login', 'location=center,width=500,height=600');
-            loginWindow.addEventListener('message', (event) => {
-                if (event.origin !== 'http://localhost:8081') {
-                    console.log('不信任的來源: ',event.origin);
-                    return;
-                }
-                const userInfo = event.data;
-                console.log('使用者資訊: '+userInfo);
-                this.router.push('/dashboard'); 
-            },{once: true});
-            // axios.get('http://localhost:8081/oauth2/authorization/google', {
-            // })
-            // .then(response => console.log(response.json()))
-            // .error(error => console.error('Error', error));
+        googleLoginModal(){
+            window.google.accounts.id.prompt();
         },
-        async loginWithGoogle() {
-            try {
-                const googleUser = await this.$gAuth.signIn();
-                const profile = googleUser.getBasicProfile();
-                console.log('ID: ' + profile.getId());
-                console.log('Full Name: ' + profile.getName());
-                console.log('Given Name: ' + profile.getGivenName());
-                console.log('Family Name: ' + profile.getFamilyName());
-                console.log('Image URL: ' + profile.getImageUrl());
-                console.log('Email: ' + profile.getEmail());
-            } catch (error) {
-                console.error('Google 登入失敗：', error);
-            }
+        initializeGoogleSettings(){
+            // window.onload = () => {
+                window.google.accounts.id.initialize({
+                    client_id: '226163930899-b80tlo68hu6bluhoochdipg2eb8du7cj.apps.googleusercontent.com', // required
+                    callback: this.onLogin, // invoke while user login in the popup
+                    cancel_on_tap_outside: true, // optional
+                    context: "signin", // optional
+                });
+                window.google.accounts.id.renderButton(
+                    document.getElementById("googleButton"),{ theme: "outline", size: "large" } // customization attributes
+                );
+                // window.google.accounts.id.prompt(); // show one-tap popup
+            // };
+        },
+        onLogin(res){
+            // 顯示 loading modal
+            this.isLoading = true;
+            defAxios.post('/googleLogin', {
+                clientId:res.clientId,
+                client_id:res.client_id,
+                credential:res.credential,
+                select_by:res.select_by
+            },{
+                headers: {
+                    'Accept': 'application/json'
+                },
+            }).then((response) => {
+                console.log('google 登入測試: '+JSON.stringify(response.data.data));
+                if(response.status==200){
+                    localStorage.clear();
+                    localStorage.setItem('token', response.data.token);
+                    localStorage.setItem('username', response.data.username);
+                    localStorage.setItem('userId', response.data.userId);
+                    localStorage.setItem('role', response.data.role);
+                    localStorage.setItem('googlePictureUrl',response.data.googlePictureUrl);
+                }
+                this.isLoading = false;
+                // 假設登入成功
+                this.$router.push('/dashboard'); // 導航到 Dashboard 頁面                
+            }).catch((error) => {
+                if(error!='AxiosError: Network Error'){
+                    console.error('登入失敗: '+JSON.stringify(error));
+                    this.isLoading = false;
+                    this.message='登入失敗，請重新檢查帳號密碼是否正確';
+                }else{
+                    this.isLoading = false;
+                    this.message ='目前伺服器無回應，請稍後在試';
+                }
+            });
         },
         async login() {
             let regex = /^[A-Za-z\d]{8,30}$/;
@@ -141,7 +167,19 @@ export default {
         if(localStorage.getItem('username')!='' && localStorage.getItem('token')!='' ){
             this.$router.push('/dashboard');
         }
+        try{
+            this.initializeGoogleSettings();
+        }catch(error){
+            console.log(error);
+        }
     },
+    mounted(){
+        try{
+            this.initializeGoogleSettings();
+        }catch(error){
+            console.log(error);
+        }
+    }
 };
 </script>
 

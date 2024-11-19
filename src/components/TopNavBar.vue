@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light ">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div style="margin-left: 5%;"></div>
         <a class="navbar-brand" href="http://localhost:8080/"> <img alt="" src="@/assets/img/landmark-solid.svg" width="30"
                 height="30">StockPanda - 股票模擬交易平台</a>
@@ -8,42 +8,33 @@
                 <li><router-link to="/stocks">查看股票</router-link></li>
                 <li><router-link to="/portfolio">我的投資組合</router-link></li>
                 <li><router-link to="/transactions">交易歷史</router-link></li>
-                <li>帳戶餘額: {{ accountBalance }}</li>
+                <li>帳戶餘額: $ {{ accountBalance }}</li>
             </ul>
         </nav>
-        <div style="margin-left: auto; margin-right: 30px;">
-
+        <div class="navbar-container">    
             <div class="navbar" id="navbarNav">
-                <!-- <img alt="尚未上傳照片" style="width: 40px; height: 40px; margin-right: 10px; font-size: xx-small;"
-                    src="http://localhost:8081/iMedical/Backstage/downloadImage/${loginSession[0].id}"><img /> -->
                 <ul class=navbar-nav>
-                    <ins v-if="username != ''" style="vertical-align:bottom; margin-right: 20px;">您好! :
-                        <b style="color: red; font: bolder;">
-                            {{ username }}
-                            <!-- <sec:authentication property="name" /> -->
-                        </b> </ins>
                     <li class="nav-item">
+                        <img v-if="googlePictureUrl!=''" alt="Google User Picture" class="user-icon" :src="googlePictureUrl">
+                        <img v-if="googlePictureUrl==''" alt="Default User Picture" class="user-icon" src="@/assets/img/user-tie-solid.svg">                       
+                    </li>
+                    <li class="nav-item username" v-if="username != ''">
                         <form>
-                            <!-- <sec:csrfInput /> -->
+                            {{ username }}
                             <button type="submit" class="btn btn-outline-dark " @click.prevent="logout">登出</button>
                         </form>
                     </li>
                 </ul>
-
-
             </div>
-
-
         </div>
-    </nav>
+    </nav> 
+    <hr class="divider"/>
+
 </template>
 
 
 <script>
-    // import VueCookies from 'vue-cookies'
-    // import router from '@/router';
     import axios from 'axios';
-    import { EventBus } from '@/assets/js/event-bus';
     const defAxios = axios.create({
         baseURL: 'http://localhost:8081',
         timeout: 10000
@@ -53,7 +44,8 @@
             return {
                 userId:0,
                 username: '', // 可以從登入資訊中獲取使用者名稱
-                accountBalance:''
+                accountBalance:'',
+                googlePictureUrl:''
             };
         },
         methods: {
@@ -92,6 +84,7 @@
             document.title = "StockPanda - 股票模擬交易平台";
             this.userId = localStorage.getItem('userId');
             this.username = localStorage.getItem('username');
+            this.googlePictureUrl = localStorage.getItem('googlePictureUrl');
             // 監聽 localStorage 的變化
             window.addEventListener('storage', (event) => {
                 if (event.key === 'logout') {
@@ -99,22 +92,46 @@
                 }
             });
             this.refreshAccountBalance();
-            EventBus.on('refreshAccountBalance', this.refreshAccountBalance);
         },
         beforeUnmount() {
             // 移除事件監聽器
             window.removeEventListener('storage', this.handleStorageEvent);
-            EventBus.off('refreshAccountBalance', this.refreshAccountBalance);
         }
     }
 
 </script>
 <style scoped>
-.top-nav-bar {
-    background-color:auto;
-    padding: 10px;
+.navbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
-
+.navbar-nav{
+    list-style: none;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+}
+.navbar-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.nav-item {
+    margin-left: 20px;
+}
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
 .nav-list {
     list-style-type: none;
     margin: 0;
@@ -133,5 +150,46 @@
 
 .nav-list li a:hover {
     text-decoration: underline;
+}
+.top-nav-bar {
+    display: flex;
+    justify-content: flex-start;
+    flex-grow: 1;
+}
+
+.user-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+    margin-right: 10px;
+}
+.username {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    color: #333;
+}
+
+.logout-button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #0056b3;
+}
+.divider {
+    margin-top: 70px; /* 確保橫線不會被導航欄遮擋 */
+    border: 0;
+    height: 1px;
+    background: #333; /* 設置橫線顏色 */
+    /* background-image: linear-gradient(to right, #ccc, #333, #ccc); 添加漸變效果 */
 }
 </style>

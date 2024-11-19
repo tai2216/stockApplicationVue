@@ -9,8 +9,10 @@
                     <th @click="sortStocks('stockCode')">股票代碼<span v-if="sortKey === 'stockCode'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('stockName')">股票名稱<span v-if="sortKey === 'stockName'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('priceAverage')">平均價<span v-if="sortKey === 'priceAverage'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <th>現價</th>
                     <th @click="sortStocks('totalQuantity')">持股數量<span v-if="sortKey === 'totalQuantity'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('totalCost')">總成本<span v-if="sortKey === 'totalCost'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <th>損益</th>
                 </tr>
             </thead>
             <tbody>
@@ -19,8 +21,12 @@
                     <td>{{ stockHolding.stockCode }}</td>
                     <td>{{ stockHolding.stockName }}</td>
                     <td>{{ stockHolding.priceAverage }}</td>
+                    <td>{{ this.stockCurrentPrice[stockHolding.stockCode] }}</td>
                     <td>{{ stockHolding.totalQuantity}}</td>
                     <td>{{ stockHolding.totalCost}}</td>
+                    <td :class="getProfitLossClass((this.stockCurrentPrice[stockHolding.stockCode]*stockHolding.totalQuantity)-stockHolding.totalCost)">
+                        {{(this.stockCurrentPrice[stockHolding.stockCode]*stockHolding.totalQuantity)-stockHolding.totalCost}}
+                    </td>
                     <td>
                         <button class="sell-button" @click="openTradeModal('/sellStock',stockHolding)">賣出</button>
                     </td>
@@ -31,7 +37,9 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8">共 {{ stockHoldingObj.totalElements }} 檔股票</td>
+                    <td colspan="8">共 {{ stockHoldingObj.totalElements }} 檔股票， 總損益: 
+                        <span :class="getProfitLossClass(this.stockTotalLoss)">{{ this.stockTotalLoss }}</span>
+                    </td>
                 </tr>
             </tfoot> 
         </table>
@@ -78,7 +86,9 @@
                                 <th >持股數量</th>
                                 <th >交易日期</th>
                                 <th >價格</th>
+                                <th >現價</th>
                                 <th >總成本</th>
+                                <th>損益</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -89,7 +99,11 @@
                                 <td>{{ stockHoldingDetails.quantity}}</td>
                                 <td>{{ stockHoldingDetails.transactionDate }}</td>
                                 <td>{{ stockHoldingDetails.price}}</td>
+                                <td>{{ this.stockCurrentPrice[stockHoldingDetails.stockCode] }}</td>
                                 <td>{{ stockHoldingDetails.cost}}</td>
+                                <td :class="getProfitLossClass((this.stockCurrentPrice[stockHoldingDetails.stockCode]*stockHoldingDetails.quantity)-stockHoldingDetails.cost)">
+                                    {{(this.stockCurrentPrice[stockHoldingDetails.stockCode]*stockHoldingDetails.quantity)-stockHoldingDetails.cost}}
+                                </td>
                             </tr>
                         </tbody>
                         <tfoot>
@@ -149,6 +163,8 @@ export default {
             //
             stockHoldingObj:{},
             stockHoldingPage:[],
+            stockCurrentPrice:{},
+            stockTotalLoss:0,
             //
             stockHoldingDetailsObj:{},
             stockHoldingDetailsPage:[],
@@ -181,15 +197,43 @@ export default {
                     page: this.currentPage
                 }
             }).then((response)=>{
-                console.log(JSON.stringify(response.data));
+                // console.log(JSON.stringify(response.data));
                 this.stockHoldingObj = response.data.data;
                 this.stockHoldingPage = response.data.data.content;
                 this.totalPages = response.data.data.totalPages;
+                let tempStr = '';
+                for(let d of this.stockHoldingPage){
+                    // console.log(d);
+                    tempStr = tempStr.concat(d.stockCode.toString()+',');
+                }
+                if (tempStr.endsWith(',')) {
+                    tempStr = tempStr.slice(0, -1);
+                }
+                // console.log(tempStr);
+                this.getCurrentPrice(tempStr);
                 // this.accountBalance = response.data.data.balance!=null? Number(response.data.data.balance).toLocaleString():'0';
             }).catch((error)=>{
                 console.log('error:'+JSON.stringify(error.response));
                 // let err = error.response.error;
                 // this.accountBalance = error.response.message + (err!=null? err.toString():'');
+            })
+        },
+        getCurrentPrice(stockCodes){
+            defAxios.get('/getCurrentPrice',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params: {
+                    stockCodes:stockCodes
+                }
+            }).then((response)=>{
+                // console.log(JSON.stringify(response.data));
+                // console.log(JSON.stringify(response.data.data));
+                this.stockCurrentPrice = response.data.data;
+                this.setAndGetTotalLoss();
+            }).catch((error)=>{
+                console.log('error:'+JSON.stringify(error.response));
             })
         },
         async queryStockHoldingDetails(){
@@ -203,7 +247,7 @@ export default {
                     page: this.currentPageDetails
                 }
             }).then((response)=>{
-                console.log(JSON.stringify(response.data));
+                // console.log(JSON.stringify(response.data));
                 this.stockHoldingDetailsObj = response.data.data;
                 this.stockHoldingDetailsPage = response.data.data.content;
                 this.totalPagesDetails = this.stockHoldingDetailsObj.totalPages;
@@ -321,6 +365,29 @@ export default {
                 'sorted-asc': this.sortKey === key && this.sortOrder === 1,
                 'sorted-desc': this.sortKey === key && this.sortOrder === -1
             };
+        },
+        getProfitLossClass(value) {
+            // console.log(value);
+            return value >= 0 ? 'profit' : 'loss';
+        },
+        setAndGetTotalLoss(){
+            console.log('size: '+this.stockHoldingPage.length);
+            console.log('current price size: '+this.stockCurrentPrice['0050']);
+            for(let stockHolding of this.stockHoldingPage){
+                // console.log(stockHolding);
+                let curPrice = this.stockCurrentPrice[stockHolding.stockCode];
+                console.log('current priece: '+curPrice);
+                let q = stockHolding.totalQuantity;
+                console.log('quantity: '+q);
+                let totalCost = stockHolding.totalCost;
+                console.log('total cost: '+totalCost);
+                let n = (curPrice*q)-totalCost;
+                console.log('n: '+n);
+                console.log('stockTotalLoss: '+this.stockTotalLoss);
+                this.stockTotalLoss +=n;
+            }
+            console.log('qq:'+this.stockTotalLoss);
+            return this.stockTotalLoss;
         }
     },
     created() {
@@ -332,6 +399,15 @@ export default {
 </script>
   
 <style scoped>
+
+.profit {
+    color: red;
+}
+
+.loss {
+    color: green;
+}
+
 .my-portfolio {
     padding: 20px;
     background-color: #f8f9fa;

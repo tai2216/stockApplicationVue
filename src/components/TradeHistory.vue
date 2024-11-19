@@ -1,57 +1,121 @@
 <template>
+    <TopNavBar></TopNavBar>
     <div class="trade-history">
         <h2 class="title">交易歷史</h2>
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>交易日期</th>
-                    <th>股票名稱</th>
+                    <th>流水號</th>
                     <th>股票代碼</th>
-                    <th>交易類型</th>
                     <th>數量</th>
                     <th>價格</th>
-                    <th>總金額</th>
+                    <th>交易日期</th>
+                    <th>交易類型</th>
+                    <!-- <th>股票名稱</th> -->
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="trade in trades" :key="trade.id">
-                    <td>{{ trade.date }}</td>
-                    <td>{{ trade.name }}</td>
-                    <td>{{ trade.symbol }}</td>
-                    <td>{{ trade.type }}</td>
-                    <td>{{ trade.quantity }}</td>
-                    <td>{{ trade.price.toFixed(2) }}</td>
-                    <td>{{ (trade.quantity * trade.price).toFixed(2) }}</td>
+                <tr v-for="trans in transactionHistoryPage" :key="trans.serialNumber">
+                    <td>{{ trans.serialNumber }}</td>
+                    <td>{{ trans.stockCode }}</td>
+                    <td>{{ trans.quantity }}</td>
+                    <td>{{ trans.price }}</td>
+                    <td>{{ trans.transactionDate }}</td>
+                    <td>{{ trans.transactionType }}</td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="8">共 {{ transactionHistoryObj.totalElements }} 筆交易歷史紀錄</td>
+                </tr>
+            </tfoot> 
         </table>
+        <div class="pagination">
+            <button @click="prevPage" :disabled="currentPage <= 0">上一頁</button>
+            <span>第 {{ currentPage+1 }} 頁，共 {{ totalPages }} 頁</span>
+            <button @click="nextPage" :disabled="((currentPage==0&&totalPages==1) | currentPage+1 >= totalPages)">下一頁</button>
+            <input type="number" v-model.number="goToPageNumber" min="1" :max="totalPages" placeholder="頁數" />
+            <button @click="goToPage">跳轉</button>
+        </div>
         <div>
             <br />
             <BackButton />
         </div>
-        <div v-if="trades.length === 0" class="no-results">
+        <div v-if="transactionHistoryPage.length === 0" class="no-results">
             你沒有任何交易歷史
         </div>
     </div>
 </template>
   
 <script>
+import '@/assets/css/common.css';
+import TopNavBar from '@/components/TopNavBar.vue';
 import BackButton from '@/components/BackButton.vue';
+import axios from 'axios';
+const defAxios = axios.create({
+  baseURL: 'http://localhost:8081',
+  timeout: 10000
+});
 export default {
     components: {
         BackButton,
+        TopNavBar
     },
     name: 'TradeHistory',
     data() {
         return {
-            trades: [
-                { id: 1, date: '2024-10-01', name: 'Apple Inc.', symbol: 'AAPL', type: '買入', quantity: 10, price: 140.00 },
-                { id: 2, date: '2024-10-02', name: 'Microsoft Corp.', symbol: 'MSFT', type: '賣出', quantity: 5, price: 260.00 },
-                { id: 3, date: '2024-10-03', name: 'Google LLC', symbol: 'GOOGL', type: '買入', quantity: 2, price: 2500.00 },
-                // 其他交易歷史資料...
-            ],
+            transactionHistoryObj:{},
+            transactionHistoryPage:[],
+            currentPage: 0,
+            totalPages:0,
+            itemsPerPage: 15,
+            goToPageNumber: null,
         };
     },
+    methods:{
+        async getTransactionHistory(){
+            await defAxios.get('/getTransactionHistory',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params: {
+                    userId:localStorage.getItem('userId'),
+                    page: this.currentPage
+                }
+            }).then((response)=>{
+                // console.log(JSON.stringify(response.data.data));
+                this.transactionHistoryObj = response.data.data;
+                this.transactionHistoryPage = response.data.data.content;
+                this.totalPages = response.data.data.totalPages;
+            }).catch((error)=>{
+                console.log('error:'+JSON.stringify(error.response));
+                // let err = error.response.error;
+                // this.accountBalance = error.response.message + (err!=null? err.toString():'');
+            })
+        },
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+                this.getTransactionHistory();
+            }
+        },
+        prevPage() {
+            if (this.currentPage >= 1) {
+                this.currentPage--;
+                this.getTransactionHistory();
+            }
+        },
+        goToPage() {
+            if (this.goToPageNumber !== null && this.goToPageNumber > 0 && this.goToPageNumber <= this.totalPages) {
+                this.currentPage = this.goToPageNumber - 1;
+                this.getTransactionHistory();
+            }
+        },
+    },
+    created(){
+        this.getTransactionHistory();
+    }
 };
 </script>
   

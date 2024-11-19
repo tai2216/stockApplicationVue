@@ -11,7 +11,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import googleAuth from './googleAuth.js';
+// import googleAuth from './googleAuth.js';
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'
 
@@ -43,5 +43,5 @@ const app = createApp(App);
 
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
-googleAuth(app); // 使用 googleAuth 插件
+// googleAuth(app); // 使用 googleAuth 插件
 app.mount('#app');
