@@ -12,6 +12,7 @@
                 <input type="password" autocomplete="current-password" placeholder="密碼" v-model="password" required class="input-field"/>
             </div>
             <button @click="login" class="login-button">登入</button>
+            <router-link to="/forgotPassword">忘記密碼?</router-link>
             <transition name ="fade">
                 <div v-if="message" :style="{color:'red'}">{{ message }}</div>
             </transition>

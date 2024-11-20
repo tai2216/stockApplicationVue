@@ -6,6 +6,7 @@ import DashBoard from '@/components/DashBoard.vue'; // 登入後頁面
 import StocksList from '@/components/StocksList.vue'; // 股票頁面
 import MyPortfolio from '@/components/MyPortfolio.vue'; // 我的投資組合頁面
 import TradeHistory from '@/components/TradeHistory.vue'; // 交易歷史頁面
+import ForgotPasswordForm from '@/components/ForgotPasswordForm.vue'; // 忘記密碼頁面
 const routes = [
     {
         path: '/',
@@ -16,6 +17,11 @@ const routes = [
         path: '/register',
         name: 'register',
         component: RegisterForm,
+    },
+    {
+        path: '/forgotPassword',
+        name: 'ForgotPasswordForm',
+        component: ForgotPasswordForm,
     },
     {
         path: '/dashboard',
@@ -39,7 +45,6 @@ const routes = [
         path: '/transactions',
         name: 'TradeHistory-List',
         component: TradeHistory,
-        meta: { requiresAuth: true }
     },
 ];
 
