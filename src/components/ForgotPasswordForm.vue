@@ -1,6 +1,6 @@
 <template>
-    <div class="register-container">
-        <form class="login-form" >
+    <div class="forgotPassword-container">
+        <form class="forgotPassword-form" >
             <h2 class="title">
                 <img alt="" src="@/assets/img/question-solid.svg" width="20" height="20"/>
                 忘記密碼

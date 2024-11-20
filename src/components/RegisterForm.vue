@@ -24,7 +24,6 @@
                 height="20">
                 已經有帳號了？<router-link to="/">立即登入</router-link>
             </p>
-            <button @click="loginWithGoogle" class="google-button">使用 Google 登入</button>
         </form>
         <!-- Modal 視窗 -->
         <transition name ="fade">
@@ -131,25 +130,6 @@ export default {
         closeErrorModal() {
             this.showErrorModal = false;
         },
-        loginWithGoogle() {
-            this.$gAuth.signIn().then(googleUser => {
-                const profile = googleUser.getBasicProfile();
-                console.log('ID: ' + profile.getId());
-                console.log('Full Name: ' + profile.getName());
-                console.log('Given Name: ' + profile.getGivenName());
-                console.log('Family Name: ' + profile.getFamilyName());
-                console.log('Image URL: ' + profile.getImageUrl());
-                console.log('Email: ' + profile.getEmail());
-
-                const authResponse = googleUser.getAuthResponse();
-                console.log('Access Token: ' + authResponse.access_token);
-                console.log('ID Token: ' + authResponse.id_token);
-                this.username = profile.getName();
-                // 這裡可以處理登入後的邏輯，例如將使用者資訊存儲在 Vuex 或本地存儲中
-            }).catch(error => {
-                console.error(error);
-            });
-        }
     },
 };
 </script>

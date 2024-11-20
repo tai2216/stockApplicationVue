@@ -1,7 +1,7 @@
 <template>
     <div class="login-container">
         <form @submit.prevent="handleSubmit" class="login-form">
-            <h2>歡迎來到Stock Panda！</h2>
+            <h2><img alt="" src="@/assets/img/landmark-solid.svg" width="30" height="30"/> 歡迎來到Stock Panda！</h2>
             <p>開啟您的投資旅程</p>
             <div>
                 <img alt="" src="@/assets/img/user-solid.svg" width="20" height="20"/>
