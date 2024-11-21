@@ -42,6 +42,7 @@ router.beforeEach((to, from, next) => {
 const app = createApp(App);
 //後端的url全域變數
 app.config.globalProperties.$backendUrlPrefix = 'http://localhost:8081';
+app.config.globalProperties.$frontendUrlPrefix = 'https://b60c-59-124-224-145.ngrok-free.app';
 app.component('font-awesome-icon', FontAwesomeIcon);
 app.use(router);
 // googleAuth(app); // 使用 googleAuth 插件

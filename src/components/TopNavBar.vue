@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div style="margin-left: 5%;"></div>
-        <a class="navbar-brand" href="http://localhost:8080/"> <img alt="" src="@/assets/img/landmark-solid.svg" width="30"
+        <a class="navbar-brand" href="/"> <img alt="" src="@/assets/img/landmark-solid.svg" width="30"
                 height="30">
             <span>StockPanda - 股票模擬交易平台</span>
         </a>
@@ -16,9 +16,11 @@
         <div class="navbar-container">    
             <div class="navbar" id="navbarNav">
                 <ul class=navbar-nav>
-                    <li class="nav-item">
-                        <img v-if="googlePictureUrl!=''" alt="Google User Picture" class="user-icon" :src="googlePictureUrl">
-                        <img v-if="googlePictureUrl==''" alt="Default User Picture" class="user-icon" src="@/assets/img/user-tie-solid.svg">                       
+                    <li class="nav-item" v-if="googlePictureUrl!='' & googlePictureUrl!=null">
+                        <img alt="Google User Picture" class="user-icon" :src="googlePictureUrl">
+                    </li>
+                    <li class="nav-item" v-if="googlePictureUrl=='' | googlePictureUrl==null">
+                        <img alt="Default User Picture" class="user-icon" src="@/assets/img/user-tie-solid.svg">                       
                     </li>
                     <li class="nav-item username" v-if="username != ''">
                         <form>
@@ -38,7 +40,8 @@
 <script>
     import axios from 'axios';
     const defAxios = axios.create({
-        baseURL: 'http://localhost:8081',
+//   baseURL: 'http://localhost:8081',
+baseURL: '/api',
         timeout: 10000
     });
     export default {
@@ -51,13 +54,9 @@
             };
         },
         methods: {
-            handleStorageEvent(event) {
-                if (event.key === 'logout') {
-                    this.$router.push('/'); // 返回登入頁面
-                }
-            },
             logout() {
                 // 處理登出邏輯
+                window.google.accounts.id.disableAutoSelect();
                 localStorage.clear();
                 localStorage.setItem('logout', Date.now());
                 this.$router.push('/'); // 返回登入頁面
@@ -83,22 +82,11 @@
             }
         },
         created() {
-            document.title = "StockPanda - 股票模擬交易平台";
             this.userId = localStorage.getItem('userId');
             this.username = localStorage.getItem('username');
             this.googlePictureUrl = localStorage.getItem('googlePictureUrl');
-            // 監聽 localStorage 的變化
-            window.addEventListener('storage', (event) => {
-                if (event.key === 'logout') {
-                    this.$router.push('/'); // 返回登入頁面
-                }
-            });
             this.refreshAccountBalance();
         },
-        beforeUnmount() {
-            // 移除事件監聽器
-            window.removeEventListener('storage', this.handleStorageEvent);
-        }
     }
 
 </script>

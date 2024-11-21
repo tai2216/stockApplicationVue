@@ -62,7 +62,7 @@
             <div class="modal-content">
                 <h2>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}</h2>
                 <h3>{{ selectedStock.Name }}</h3>
-                <input type="number" v-model.number="tradeQuantity" placeholder="輸入數量" />(單位:股)
+                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" />(單位:股)
                 <button @click="buyOrSellStock(buyOrSellUrl,tradeQuantity,selectedStock.stockCode)">確認</button>
                 <button @click="closeTradeModal">取消</button>
             </div>
@@ -126,7 +126,7 @@
         <!-- 快閃訊息 -->
         <transition name="fade">
             <div v-if="showFlashMessage" :class="['flash-message', flashMessageType]">
-                <p>{{ refreshMessage }}</p>
+                <!-- <p>{{ refreshMessage }}</p> -->
                 <p>{{ flashMessage }}</p>
             </div>
         </transition>
@@ -140,7 +140,8 @@ import TopNavBar from '@/components/TopNavBar.vue';
 import BackButton from '@/components/BackButton.vue';
 import axios from 'axios';
 const defAxios = axios.create({
-  baseURL: 'http://localhost:8081',
+//   baseURL: 'http://localhost:8081',
+baseURL: '/api',
   timeout: 10000
 });
 export default {
@@ -183,7 +184,7 @@ export default {
             showFlashMessage: false,
             flashMessage: '',
             flashMessageType: '',
-            refreshMessage:`三秒後刷新頁面...\n\r`,
+            // refreshMessage:`三秒後刷新頁面...\n\r`,
         };
     },
     methods:{
@@ -261,6 +262,16 @@ export default {
         },
         buyOrSellStock(url,quantity,stockCode){
             this.closeTradeModal();
+            if (typeof quantity !== 'number' || isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+                this.flashMessage = '數量不得為零或負數且必須為數字正整數';
+                this.flashMessageType = 'error';
+                this.isLoading = false;
+                this.showFlashMessage = true;
+                setTimeout(() => {
+                    this.showFlashMessage = false;
+                }, 1000);
+                return;
+            }
             this.isLoading = true;
             defAxios.post(url,{
                 // 在post方法裡面當傳入第三個config Object時，這一塊就是request body須注意
@@ -289,8 +300,7 @@ export default {
             this.showFlashMessage = true;
             setTimeout(() => {
                 this.showFlashMessage = false;
-                window.location.reload();
-            }, 3000); // 3 秒後隱藏快閃訊息
+            }, 1500);
         },
         //
         openDetailsModal(serialNo){
@@ -389,7 +399,12 @@ export default {
             }
             console.log('qq:'+this.stockTotalLoss);
             return this.stockTotalLoss;
-        }
+        },
+        validateQuantity() {
+            if (typeof this.tradeQuantity !== 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
+                this.tradeQuantity = null;
+            }
+        },
     },
     created() {
         this.queryStockHolding();

@@ -7,6 +7,7 @@ import StocksList from '@/components/StocksList.vue'; // 股票頁面
 import MyPortfolio from '@/components/MyPortfolio.vue'; // 我的投資組合頁面
 import TradeHistory from '@/components/TradeHistory.vue'; // 交易歷史頁面
 import ForgotPasswordForm from '@/components/ForgotPasswordForm.vue'; // 忘記密碼頁面
+import EnableUser from '@/components/EnableUser.vue'; // 啟用帳號頁面
 const routes = [
     {
         path: '/',
@@ -45,6 +46,14 @@ const routes = [
         path: '/transactions',
         name: 'TradeHistory-List',
         component: TradeHistory,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/enableUser/:username/:remark',
+        name: 'EnableUser',
+        component: EnableUser,
+        // props: true
+        props: route => ({ username: route.query.username, remark: route.query.remark })
     },
 ];
 

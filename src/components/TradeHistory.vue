@@ -8,7 +8,7 @@
                     <th>流水號</th>
                     <th>股票代碼</th>
                     <th>數量</th>
-                    <th>價格</th>
+                    <th>價格(每股)</th>
                     <th>交易日期</th>
                     <th>交易類型</th>
                     <!-- <th>股票名稱</th> -->
@@ -19,7 +19,7 @@
                     <td>{{ trans.serialNumber }}</td>
                     <td>{{ trans.stockCode }}</td>
                     <td>{{ trans.quantity }}</td>
-                    <td>{{ trans.price }}</td>
+                    <td>{{ Math.abs(trans.price) }}</td>
                     <td>{{ trans.transactionDate }}</td>
                     <td>{{ trans.transactionType }}</td>
                 </tr>
@@ -54,7 +54,8 @@ import TopNavBar from '@/components/TopNavBar.vue';
 import BackButton from '@/components/BackButton.vue';
 import axios from 'axios';
 const defAxios = axios.create({
-  baseURL: 'http://localhost:8081',
+//   baseURL: 'http://localhost:8081',
+baseURL: '/api',
   timeout: 10000
 });
 export default {

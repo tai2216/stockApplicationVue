@@ -15,7 +15,8 @@ import TopNavBar from './TopNavBar.vue';
 import * as echarts from 'echarts';
 import axios from 'axios';
 const defAxios = axios.create({
-  baseURL: 'http://localhost:8081',
+//   baseURL: 'http://localhost:8081',
+baseURL: '/api',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -52,7 +53,7 @@ export default {
                 },
             }) // 替換為實際的 API URL
             .then(response => {
-                // console.log(JSON.stringify(response.data.data));
+                console.log(JSON.stringify(response.data.data));
                 this.stockData = response.data.data;
                 // console.log(JSON.stringify(tObj))
                 this.renderChart();
@@ -107,6 +108,7 @@ export default {
         // TopNavBar.methods.refreshAccountBalance();
     },
     mounted() {
+        console.log('fetchdata');
         this.fetchStockData();
     },
     beforeUnmount () {

@@ -45,6 +45,7 @@ import axios from 'axios';
 import '@/assets/css/loginAndRegister.css';
 const defAxios = axios.create({
   baseURL: 'http://localhost:8081',
+//   baseURL: '/api',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -72,6 +73,7 @@ export default {
                     callback: this.onLogin, // invoke while user login in the popup
                     cancel_on_tap_outside: true, // optional
                     context: "signin", // optional
+                    auto_select: true
                 });
                 window.google.accounts.id.renderButton(
                     document.getElementById("googleButton"),{ theme: "outline", size: "large" } // customization attributes
@@ -106,9 +108,9 @@ export default {
                 this.$router.push('/dashboard'); // 導航到 Dashboard 頁面                
             }).catch((error) => {
                 if(error!='AxiosError: Network Error'){
-                    console.error('登入失敗: '+JSON.stringify(error));
+                    console.error('登入失敗: '+JSON.stringify(error.response));
                     this.isLoading = false;
-                    this.message='登入失敗，請重新檢查帳號密碼是否正確';
+                    this.message=error.response.data.message;
                 }else{
                     this.isLoading = false;
                     this.message ='目前伺服器無回應，請稍後在試';
@@ -146,9 +148,9 @@ export default {
                 this.$router.push('/dashboard'); // 導航到 Dashboard 頁面
             }).catch((error) => {
                 if(error!='AxiosError: Network Error'){
-                    console.error('登入失敗: '+JSON.stringify(error));
+                    console.error('登入失敗: '+JSON.stringify(error.response));
                     this.isLoading = false;
-                    this.message='登入失敗，請重新檢查帳號密碼是否正確';
+                    this.message=error.response.data.message;
                 }else{
                     this.isLoading = false;
                     this.message ='目前伺服器無回應，請稍後在試';

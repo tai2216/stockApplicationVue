@@ -80,7 +80,8 @@
 import axios from 'axios';
 import '@/assets/css/loginAndRegister.css';
 const defAxios = axios.create({
-  baseURL: 'http://localhost:8081',
+//   baseURL: 'http://localhost:8081',
+baseURL: '/api',
   timeout: 10000,
   headers: {
     'Authorization': localStorage.getItem('token'),
