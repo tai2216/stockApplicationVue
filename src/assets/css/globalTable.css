@@ -1,4 +1,14 @@
 /* global.css */
+.tableContainer {
+    padding: 20px;
+    background-color: #f8f9fa;
+    /* 淺灰背景 */
+    border-radius: 8px;
+    /* 邊角圓滑 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    /* 加上陰影 */
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

@@ -1,6 +1,6 @@
 <template>
     <TopNavBar :key="componentKey"/>
-    <div class="stocks">
+    <div class="tableContainer">
         <h2 class="title">股票列表</h2>
         <form @submit.prevent="searchStock">
             <input type="text" v-model="keyWord" placeholder="搜尋股票..." class="search-input" />
@@ -13,6 +13,8 @@
                     <th @click="sortStocks('Name')">股票名稱<span v-if="sortKey === 'Name'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('PreviousDayPrice')">收盤價(單位:一股)<span v-if="sortKey === 'PreviousDayPrice'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('LastTradingDay')">最後交易日<span v-if="sortKey === 'LastTradingDay'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -37,9 +39,9 @@
         </table>
         <div v-if="searchMode!=true" class="pagination">
             <button @click="prevPage" :disabled="currentPage <= 0">上一頁</button>
-            <span>第 {{ currentPage+1 }} 頁，共 {{ totalPages }} 頁</span>
+            <span>第 {{ validPage(currentPage)+1 }} 頁，共 {{ totalPages }} 頁</span>
             <button @click="nextPage" :disabled="((currentPage==0&&totalPages==1) | currentPage+1 >= totalPages)">下一頁</button>
-            <input type="number" v-model.number="goToPageNumber" min="1" :max="totalPages" placeholder="頁數" />
+            <input type="number" v-model.number="goToPageNumber" pattern=[0-9]* :min="1" :max="totalPages" placeholder="頁數" />
             <button @click="goToPage">跳轉</button>
         </div>
         <div>
@@ -248,6 +250,12 @@ export default {
             }
         },
         goToPage() {
+            let pageNumPattern = /^[1-9]\d*$/;
+            if(!pageNumPattern.test(this.goToPageNumber)){
+                this.goToPageNumber = 1;
+                alert('請輸入正整數');
+                return;
+            }
             if (this.goToPageNumber !== null && this.goToPageNumber > 0 && this.goToPageNumber <= this.totalPages) {
                 this.currentPage = this.goToPageNumber - 1;
                 this.queryStock();
@@ -278,6 +286,12 @@ export default {
                 this.tradeQuantity = null;
             }
         },
+        validPage(pageNum){
+            if (typeof pageNum !== 'number' | isNaN(pageNum) | pageNum <= 0) {
+                pageNum = 0;
+                return pageNum;
+            }
+        },
         countServiceCharge(price){
             let p = (price*0.001425).toFixed();
             return (p<20) ? 20 : p;
@@ -289,6 +303,7 @@ export default {
     created() {
         this.filteredStocks = this.stocks; // 初始化顯示所有股票
         if(this.twt84u.length == 0) {
+            console.log('執行首頁股票列表查詢');
             this.queryStock();
         }
     },
@@ -296,16 +311,6 @@ export default {
 </script>
   
 <style scoped>
-.stocks {
-    padding: 20px;
-    background-color: #f8f9fa;
-    /* 淺灰背景 */
-    border-radius: 8px;
-    /* 邊角圓滑 */
-    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
-    /* 加上陰影 */
-}
-
 .search-input {
     padding: 10px;
     width: 100%;

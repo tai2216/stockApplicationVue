@@ -53,7 +53,7 @@ export default {
                 },
             }) // 替換為實際的 API URL
             .then(response => {
-                console.log(JSON.stringify(response.data.data));
+                // console.log(JSON.stringify(response.data.data));
                 this.stockData = response.data.data;
                 // console.log(JSON.stringify(tObj))
                 this.renderChart();
@@ -108,7 +108,7 @@ export default {
         // TopNavBar.methods.refreshAccountBalance();
     },
     mounted() {
-        console.log('fetchdata');
+        // console.log('fetchdata');
         this.fetchStockData();
     },
     beforeUnmount () {

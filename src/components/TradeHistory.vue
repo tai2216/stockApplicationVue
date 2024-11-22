@@ -1,11 +1,11 @@
 <template>
     <TopNavBar></TopNavBar>
-    <div class="trade-history">
+    <div class="tableContainer">
         <h2 class="title">交易歷史</h2>
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>流水號</th>
+                    <!-- <th>流水號</th> -->
                     <th>股票代碼</th>
                     <th>數量</th>
                     <th>價格(每股)</th>
@@ -18,7 +18,7 @@
             </thead>
             <tbody>
                 <tr v-for="trans in transactionHistoryPage" :key="trans.serialNumber">
-                    <td>{{ trans.serialNumber }}</td>
+                    <!-- <td>{{ trans.serialNumber }}</td> -->
                     <td>{{ trans.stockCode }}</td>
                     <td>{{ trans.quantity }}</td>
                     <td>{{ Math.abs(trans.price) }}</td>
@@ -30,13 +30,13 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8">共 {{ transactionHistoryObj.totalElements }} 筆交易歷史紀錄</td>
+                    <td colspan="7">共 {{ transactionHistoryObj.totalElements }} 筆交易歷史紀錄</td>
                 </tr>
             </tfoot> 
         </table>
         <div class="pagination">
             <button @click="prevPage" :disabled="currentPage <= 0">上一頁</button>
-            <span>第 {{ currentPage+1 }} 頁，共 {{ totalPages }} 頁</span>
+            <span>第 {{ validPage(currentPage)+1 }} 頁，共 {{ totalPages }} 頁</span>
             <button @click="nextPage" :disabled="((currentPage==0&&totalPages==1) | currentPage+1 >= totalPages)">下一頁</button>
             <input type="number" v-model.number="goToPageNumber" min="1" :max="totalPages" placeholder="頁數" />
             <button @click="goToPage">跳轉</button>
@@ -113,9 +113,21 @@ export default {
             }
         },
         goToPage() {
+            let pageNumPattern = /^[1-9]\d*$/;
+            if(!pageNumPattern.test(this.goToPageNumber)){
+                this.goToPageNumber = 1;
+                alert('請輸入正整數');
+                return;
+            }
             if (this.goToPageNumber !== null && this.goToPageNumber > 0 && this.goToPageNumber <= this.totalPages) {
                 this.currentPage = this.goToPageNumber - 1;
                 this.getTransactionHistory();
+            }
+        },
+        validPage(pageNum){
+            if (typeof pageNum !== 'number' | isNaN(pageNum) | pageNum <= 0) {
+                pageNum = 0;
+                return pageNum;
             }
         },
     },
@@ -126,16 +138,6 @@ export default {
 </script>
   
 <style scoped>
-.trade-history {
-    padding: 20px;
-    background-color: #f8f9fa;
-    /* 淺灰背景 */
-    border-radius: 8px;
-    /* 邊角圓滑 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    /* 加上陰影 */
-}
-
 .title {
     font-size: 24px;
     color: #333;

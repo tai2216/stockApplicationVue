@@ -7,7 +7,7 @@
         </a>
         <nav class="top-nav-bar">
             <ul class="nav-list">
-                <li class="brand-text"><router-link to="/stocks">查看股票</router-link></li>
+                <li class="brand-text"><router-link to="/stocks">股票列表</router-link></li>
                 <li class="brand-text"><router-link to="/portfolio">我的投資組合</router-link></li>
                 <li class="brand-text"><router-link to="/transactions">交易歷史</router-link></li>
                 <li class="brand-text">帳戶餘額: $ {{ accountBalance }}</li>

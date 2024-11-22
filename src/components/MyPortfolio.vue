@@ -1,11 +1,11 @@
 <template>
     <TopNavBar/>
-    <div class="my-portfolio">
+    <div class="tableContainer">
         <h2 class="title">我的投資組合</h2>
         <table class="portfolio-table">
             <thead>
                 <tr>
-                    <th @click="sortStocks('serialNo')">流水號<span v-if="sortKey === 'serialNo' | sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <!-- <th @click="sortStocks('serialNo')">流水號<span v-if="sortKey === 'serialNo' | sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th> -->
                     <th @click="sortStocks('stockCode')">股票代碼<span v-if="sortKey === 'stockCode'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('stockName')">股票名稱<span v-if="sortKey === 'stockName'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('priceAverage')">平均價<span v-if="sortKey === 'priceAverage'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
@@ -13,11 +13,13 @@
                     <th @click="sortStocks('totalQuantity')">持股數量<span v-if="sortKey === 'totalQuantity'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('totalCost')">總成本<span v-if="sortKey === 'totalCost'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th>損益</th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="stockHolding in stockHoldingPage" :key="stockHolding.serialNo">
-                    <td>{{ stockHolding.serialNo }}</td>
+                    <!-- <td>{{ stockHolding.serialNo }}</td> -->
                     <td>{{ stockHolding.stockCode }}</td>
                     <td>{{ stockHolding.stockName }}</td>
                     <td>{{ stockHolding.priceAverage }}</td>
@@ -37,7 +39,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8">共 {{ stockHoldingObj.totalElements }} 檔股票， 總損益: 
+                    <td colspan="9">共 {{ stockHoldingObj.totalElements }} 檔股票， 總損益: 
                         <span :class="getProfitLossClass(this.stockTotalLoss)">{{ this.stockTotalLoss }}</span>
                     </td>
                 </tr>
@@ -45,7 +47,7 @@
         </table>
         <div class="pagination">
             <button @click="prevPage" :disabled="currentPage <= 0">上一頁</button>
-            <span>第 {{ currentPage+1 }} 頁，共 {{ totalPages }} 頁</span>
+            <span>第 {{ validPage(currentPage)+1 }} 頁，共 {{ totalPages }} 頁</span>
             <button @click="nextPage" :disabled="((currentPage==0&&totalPages==1) | currentPage+1 >= totalPages)">下一頁</button>
             <input type="number" v-model.number="goToPageNumber" min="1" :max="totalPages" placeholder="頁數" />
             <button @click="goToPage">跳轉</button>
@@ -84,7 +86,7 @@
                     <table class="portfolio-table">
                         <thead>
                             <tr>
-                                <th >流水號</th>
+                                <!-- <th >流水號</th> -->
                                 <th >股票代碼</th>
                                 <th >股票名稱</th>
                                 <th >持股數量</th>
@@ -97,7 +99,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="stockHoldingDetails in stockHoldingDetailsPage" :key="stockHoldingDetails.serialNo">
-                                <td>{{ stockHoldingDetails.serialNo }}</td>
+                                <!-- <td>{{ stockHoldingDetails.serialNo }}</td> -->
                                 <td>{{ stockHoldingDetails.stockCode }}</td>
                                 <td>{{ stockHoldingDetails.stockName }}</td>
                                 <td>{{ stockHoldingDetails.quantity}}</td>
@@ -112,7 +114,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="8">共 {{ stockHoldingDetailsObj.totalElements }} 筆明細</td>
+                                <td colspan="9">共 {{ stockHoldingDetailsObj.totalElements }} 筆明細</td>
                             </tr>
                         </tfoot> 
                     </table>
@@ -120,7 +122,7 @@
                 <button class="close-button" @click="closeDetailsModal()">關閉</button>
                 <div class="pagination">
                     <button @click="prevPageDetails" :disabled="currentPageDetails <= 0">上一頁</button>
-                    <span>第 {{ currentPageDetails+1 }} 頁，共 {{ totalPagesDetails }} 頁</span>
+                    <span>第 {{validPage(currentPageDetails) +1 }} 頁，共 {{ totalPagesDetails }} 頁</span>
                     <button @click="nextPageDetails" :disabled="((currentPageDetails==0&&totalPagesDetails==1) |currentPageDetails+1 >= totalPagesDetails)">下一頁</button>
                     <input type="number" v-model.number="goToPageNumberDetails" min="1" :max="totalPagesDetails" placeholder="頁數" />
                     <button @click="goToPageDetails">跳轉</button>
@@ -328,6 +330,12 @@ export default {
             }
         },
         goToPageDetails() {
+            let pageNumPattern = /^[1-9]\d*$/;
+            if(!pageNumPattern.test(this.goToPageNumberDetails)){
+                this.goToPageNumberDetails = 1;
+                alert('請輸入正整數');
+                return;
+            }
             if (this.goToPageNumberDetails !== null && this.goToPageNumberDetails > 0 && this.goToPageNumberDetails <= this.totalPagesDetails) {
                 this.currentPageDetails = this.goToPageNumberDetails - 1;
                 this.queryStockHoldingDetails();
@@ -356,6 +364,12 @@ export default {
             }
         },
         goToPage() {
+            let pageNumPattern = /^[1-9]\d*$/;
+            if(!pageNumPattern.test(this.goToPageNumber)){
+                this.goToPageNumber = 1;
+                alert('請輸入正整數');
+                return;
+            }
             if (this.goToPageNumber !== null && this.goToPageNumber > 0 && this.goToPageNumber <= this.totalPages) {
                 this.currentPage = this.goToPageNumber - 1;
                 this.queryStockHolding();
@@ -386,27 +400,25 @@ export default {
             return value >= 0 ? 'profit' : 'loss';
         },
         setAndGetTotalLoss(){
-            console.log('size: '+this.stockHoldingPage.length);
-            console.log('current price size: '+this.stockCurrentPrice['0050']);
             for(let stockHolding of this.stockHoldingPage){
                 // console.log(stockHolding);
                 let curPrice = this.stockCurrentPrice[stockHolding.stockCode];
-                console.log('current priece: '+curPrice);
                 let q = stockHolding.totalQuantity;
-                console.log('quantity: '+q);
                 let totalCost = stockHolding.totalCost;
-                console.log('total cost: '+totalCost);
                 let n = (curPrice*q)-totalCost;
-                console.log('n: '+n);
-                console.log('stockTotalLoss: '+this.stockTotalLoss);
                 this.stockTotalLoss +=n;
             }
-            console.log('qq:'+this.stockTotalLoss);
             return this.stockTotalLoss;
         },
         validateQuantity() {
             if (typeof this.tradeQuantity !== 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
                 this.tradeQuantity = null;
+            }
+        },
+        validPage(pageNum){
+            if (typeof pageNum !== 'number' | isNaN(pageNum) | pageNum <= 0) {
+                pageNum = 0;
+                return pageNum;
             }
         },
         countServiceCharge(price){
@@ -419,8 +431,6 @@ export default {
     },
     created() {
         this.queryStockHolding();
-    },
-    beforeUnmount() {
     }
 };
 </script>
@@ -433,16 +443,6 @@ export default {
 
 .loss {
     color: green;
-}
-
-.my-portfolio {
-    padding: 20px;
-    background-color: #f8f9fa;
-    /* 淺灰背景 */
-    border-radius: 8px;
-    /* 邊角圓滑 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    /* 加上陰影 */
 }
 
 .portfolio-table {
