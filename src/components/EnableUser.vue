@@ -3,7 +3,9 @@
         <transition name ="fade">
             <div v-if="message" class="modal">
                 <div class="modal-content">
-                    <div :style="{color:'red'}">{{ message }}</div>
+                    <div :style="{color:'red'}">{{ message }}
+                        <a href="/login">馬上登入</a>
+                    </div>
                 </div>
             </div>
         </transition>
@@ -22,8 +24,8 @@
 import axios from 'axios';
 import '@/assets/css/loginAndRegister.css';
 const defAxios = axios.create({
-  baseURL: 'http://localhost:8081',
-//   baseURL: '/api',
+//   baseURL: 'http://localhost:8081',
+  baseURL: '/api',
   timeout: 5000,
   headers: {
     'Accept': 'application/json'

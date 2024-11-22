@@ -45,13 +45,20 @@ baseURL: '/api',
         timeout: 10000
     });
     export default {
+        props:['newAccountBalance'],
         data() {
             return {
                 userId:0,
                 username: '', // 可以從登入資訊中獲取使用者名稱
-                accountBalance:'',
+                // accountBalance:'',
+                accountBalance: this.newAccountBalance,
                 googlePictureUrl:''
             };
+        },
+        watch: {
+            newAccountBalance(newVal) {
+                this.accountBalance = newVal; // 同步本地數據屬性
+            }
         },
         methods: {
             logout() {

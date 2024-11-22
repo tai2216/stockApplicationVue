@@ -1,5 +1,6 @@
 <template>
-    <TopNavBar/>
+    <TopNavBar :newAccountBalance="accountBalance"/>
+    <ScrollToTopButton />
     <div class="tableContainer">
         <h2 class="title">我的投資組合</h2>
         <table class="portfolio-table">
@@ -54,7 +55,7 @@
         </div>
         <div>
             <br />
-            <BackButton />
+            <!-- <BackButton /> -->
         </div>
         <div v-if="stockHoldingPage.length === 0" class="no-results">
             你的投資組合是空的
@@ -143,7 +144,8 @@
 import '@/assets/css/common.css';
 import '@/assets/css/globalTable.css';
 import TopNavBar from '@/components/TopNavBar.vue';
-import BackButton from '@/components/BackButton.vue';
+// import BackButton from '@/components/BackButton.vue';
+import ScrollToTopButton from '@/components/ScrollToTopButton.vue';
 import axios from 'axios';
 const defAxios = axios.create({
 //   baseURL: 'http://localhost:8081',
@@ -152,8 +154,9 @@ baseURL: '/api',
 });
 export default {
     components: {
-        BackButton,
-        TopNavBar
+        // BackButton,
+        TopNavBar,
+        ScrollToTopButton
     },
     name: 'MyPortfolio',
     data() {
@@ -218,7 +221,9 @@ export default {
                     tempStr = tempStr.slice(0, -1);
                 }
                 // console.log(tempStr);
-                this.getCurrentPrice(tempStr);
+                if(this.stockHoldingPage.length>0){
+                    this.getCurrentPrice(tempStr);
+                }
                 // this.accountBalance = response.data.data.balance!=null? Number(response.data.data.balance).toLocaleString():'0';
             }).catch((error)=>{
                 console.log('error:'+JSON.stringify(error.response));
@@ -296,6 +301,8 @@ export default {
                 // console.log(JSON.stringify(response.data));
                 this.flashMessage = response.data.message;
                 this.flashMessageType = 'success';
+                this.refreshAccountBalance();
+                this.queryStockHolding();
             }).catch((error)=>{
                 console.error(JSON.stringify(error.response));
                 let err = error.response.data.error;
@@ -411,13 +418,16 @@ export default {
             return this.stockTotalLoss;
         },
         validateQuantity() {
-            if (typeof this.tradeQuantity !== 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
+            if (typeof this.tradeQuantity != 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
                 this.tradeQuantity = null;
+            }else{
+                this.tradeQuantity = parseInt(this.tradeQuantity, 10);
             }
         },
         validPage(pageNum){
-            if (typeof pageNum !== 'number' | isNaN(pageNum) | pageNum <= 0) {
-                pageNum = 0;
+            if (typeof pageNum != 'number' | isNaN(pageNum) | pageNum <= 0) {
+                return 0;
+            }else{
                 return pageNum;
             }
         },
@@ -427,6 +437,25 @@ export default {
         },
         countTax(price){
             return (price*0.003).toFixed();
+        },
+        refreshAccountBalance(){
+            this.userId = localStorage.getItem('userId');
+            defAxios.get('/getAccountBalance',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params: {
+                    userId: parseInt(this.userId)
+                }
+            }).then((response)=>{
+                // console.log(JSON.stringify(response.data));
+                this.accountBalance = response.data.data.balance!=null? Number(response.data.data.balance).toLocaleString():0;
+            }).catch((error)=>{
+                console.log('error:'+JSON.stringify(error.response));
+                // let err = error.response.error;
+                // this.accountBalance = error.response.message + (err!=null? err.toString():'');
+            });
         }
     },
     created() {

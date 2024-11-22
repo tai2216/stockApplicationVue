@@ -44,8 +44,8 @@
 import axios from 'axios';
 import '@/assets/css/loginAndRegister.css';
 const defAxios = axios.create({
-  baseURL: 'http://localhost:8081',
-//   baseURL: '/api',
+//   baseURL: 'http://localhost:8081',
+  baseURL: '/api',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',

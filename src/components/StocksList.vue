@@ -1,5 +1,6 @@
 <template>
-    <TopNavBar :key="componentKey"/>
+    <TopNavBar :newAccountBalance="accountBalance"/>
+    <ScrollToTopButton />
     <div class="tableContainer">
         <h2 class="title">股票列表</h2>
         <form @submit.prevent="searchStock">
@@ -9,12 +10,17 @@
         <table class="stocks-table">
             <thead>
                 <tr>
-                    <th @click="sortStocks('Code')">股票代碼<span v-if="sortKey === 'Code' | sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <!-- <th @click="sortStocks('Code')">股票代碼<span v-if="sortKey === 'Code' | sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('Name')">股票名稱<span v-if="sortKey === 'Name'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('PreviousDayPrice')">收盤價(單位:一股)<span v-if="sortKey === 'PreviousDayPrice'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
-                    <th @click="sortStocks('LastTradingDay')">最後交易日<span v-if="sortKey === 'LastTradingDay'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <th @click="sortStocks('LastTradingDay')">最後交易日<span v-if="sortKey === 'LastTradingDay'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th> -->
+                    
+                    <th>股票代碼</th>
+                    <th>股票名稱</th>
+                    <th>收盤價(單位:一股)</th>
+                    <th>最後交易日</th>
                     <th></th>
-                    <th></th>
+                    <!-- <th></th> -->
                 </tr>
             </thead>
             <tbody>
@@ -26,9 +32,9 @@
                     <td>
                         <button class="buy-button" @click="openTradeModal('/buyStock',t)">買進</button>
                     </td>
-                    <td>
+                    <!-- <td>
                         <button class="sell-button" @click="openTradeModal('/sellStock',t)">賣出</button>
-                    </td>
+                    </td> -->
                 </tr>
             </tbody>
             <tfoot>
@@ -46,9 +52,9 @@
         </div>
         <div>
             <br />
-            <BackButton />
+            <!-- <BackButton /> -->
         </div>
-        <div v-if="message" :style="{color:'red'}">{{ message }}</div>
+        <!-- <div v-if="message" :style="{color:'red'}">{{ message }}</div> -->
         <div v-if="twt84u.length === 0" class="no-results">
             沒有找到相關股票
         </div>
@@ -79,6 +85,7 @@
                 <p>{{ flashMessage }}</p>
             </div>
         </transition>
+        
     </div>
 </template>
   
@@ -86,7 +93,9 @@
 import '@/assets/css/common.css';
 import '@/assets/css/globalTable.css';
 import TopNavBar from '@/components/TopNavBar.vue';
-import BackButton from '@/components/BackButton.vue';
+// import BackButton from '@/components/BackButton.vue';
+import ScrollToTopButton from '@/components/ScrollToTopButton.vue';
+
 import axios from 'axios';
 const defAxios = axios.create({
 //   baseURL: 'http://localhost:8081',
@@ -95,8 +104,9 @@ baseURL: '/api',
 });
 export default {
     components: {
-        BackButton,
-        TopNavBar
+        // BackButton,
+        TopNavBar,
+        ScrollToTopButton
     },
     name: 'StocksList',
     data() {
@@ -122,6 +132,7 @@ export default {
             flashMessage: '',
             flashMessageType: '',
             // refreshMessage:`三秒後刷新頁面...\n\r`,
+            accountBalance:0
         };
     },
     methods: {
@@ -216,6 +227,7 @@ export default {
                 console.log(JSON.stringify(response.data));
                 this.flashMessage = response.data.message;
                 this.flashMessageType = 'success';
+                this.refreshAccountBalance();
             }).catch((error)=>{
                 console.error(JSON.stringify(error.response));
                 let err = error.response.data.error;
@@ -282,13 +294,16 @@ export default {
             };
         },
         validateQuantity() {
-            if (typeof this.tradeQuantity !== 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
+            if (typeof this.tradeQuantity != 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
                 this.tradeQuantity = null;
+            }else{
+                this.tradeQuantity = parseInt(this.tradeQuantity, 10);
             }
         },
         validPage(pageNum){
-            if (typeof pageNum !== 'number' | isNaN(pageNum) | pageNum <= 0) {
-                pageNum = 0;
+            if (typeof pageNum != 'number' | isNaN(pageNum) | pageNum <= 0) {
+                return 0;
+            }else{
                 return pageNum;
             }
         },
@@ -298,6 +313,25 @@ export default {
         },
         countTax(price){
             return (price*0.003).toFixed();
+        },
+        refreshAccountBalance(){
+            this.userId = localStorage.getItem('userId');
+            defAxios.get('/getAccountBalance',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params: {
+                    userId: parseInt(this.userId)
+                }
+            }).then((response)=>{
+                // console.log(JSON.stringify(response.data));
+                this.accountBalance = response.data.data.balance!=null? Number(response.data.data.balance).toLocaleString():0;
+            }).catch((error)=>{
+                console.log('error:'+JSON.stringify(error.response));
+                // let err = error.response.error;
+                // this.accountBalance = error.response.message + (err!=null? err.toString():'');
+            });
         }
     },
     created() {
@@ -306,6 +340,7 @@ export default {
             console.log('執行首頁股票列表查詢');
             this.queryStock();
         }
+        this.refreshAccountBalance();
     },
 };
 </script>

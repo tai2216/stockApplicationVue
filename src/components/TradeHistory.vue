@@ -1,5 +1,6 @@
 <template>
     <TopNavBar></TopNavBar>
+    <ScrollToTopButton></ScrollToTopButton>
     <div class="tableContainer">
         <h2 class="title">交易歷史</h2>
         <table class="history-table">
@@ -43,7 +44,7 @@
         </div>
         <div>
             <br />
-            <BackButton />
+            <!-- <BackButton /> -->
         </div>
         <div v-if="transactionHistoryPage.length === 0" class="no-results">
             你沒有任何交易歷史
@@ -55,7 +56,8 @@
 import '@/assets/css/common.css';
 import '@/assets/css/globalTable.css';
 import TopNavBar from '@/components/TopNavBar.vue';
-import BackButton from '@/components/BackButton.vue';
+import ScrollToTopButton from '@/components/ScrollToTopButton.vue';
+// import BackButton from '@/components/BackButton.vue';
 import axios from 'axios';
 const defAxios = axios.create({
 //   baseURL: 'http://localhost:8081',
@@ -64,8 +66,9 @@ baseURL: '/api',
 });
 export default {
     components: {
-        BackButton,
-        TopNavBar
+        // BackButton,
+        TopNavBar,
+        ScrollToTopButton
     },
     name: 'TradeHistory',
     data() {
@@ -125,8 +128,9 @@ export default {
             }
         },
         validPage(pageNum){
-            if (typeof pageNum !== 'number' | isNaN(pageNum) | pageNum <= 0) {
-                pageNum = 0;
+            if (typeof pageNum != 'number' | isNaN(pageNum) | pageNum <= 0) {
+                return 0;
+            }else{
                 return pageNum;
             }
         },
