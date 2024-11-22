@@ -53,9 +53,13 @@
             <!-- 交易視窗 -->
             <div v-if="showTradeModal" class="modal">
             <div class="modal-content">
-                <h2>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}(零股交易)</h2>
+                <h1>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}(零股交易)</h1>
                 <h3>{{ selectedStock.Name }}</h3>
-                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" />(單位:股)
+                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" :min="1"/>
+                <p>金額: {{ tradeQuantity * selectedStock.PreviousDayPrice}}</p>
+                <p>手續費(0.1425%): {{ countServiceCharge(tradeQuantity * selectedStock.PreviousDayPrice) }}</p>
+                <p>(單位:1000股 等於一張)</p>
+                <p v-if="buyOrSellUrl=='/sellStock'">證券交易稅(0.3%): {{countTax(tradeQuantity * selectedStock.PreviousDayPrice)  }}</p>
                 <button @click="buyOrSellStock(buyOrSellUrl,tradeQuantity,selectedStock.Code)">確認</button>
                 <button @click="closeTradeModal">取消</button>
             </div>
@@ -225,7 +229,7 @@ export default {
         openTradeModal(url,stock) {
             this.buyOrSellUrl = url;
             this.selectedStock = stock;
-            this.tradeQuantity = 1000;
+            this.tradeQuantity = 1;
             this.showTradeModal = true;
         },
         closeTradeModal() {
@@ -274,6 +278,13 @@ export default {
                 this.tradeQuantity = null;
             }
         },
+        countServiceCharge(price){
+            let p = (price*0.001425).toFixed();
+            return (p<20) ? 20 : p;
+        },
+        countTax(price){
+            return (price*0.003).toFixed();
+        }
     },
     created() {
         this.filteredStocks = this.stocks; // 初始化顯示所有股票

@@ -62,7 +62,11 @@
             <div class="modal-content">
                 <h2>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}</h2>
                 <h3>{{ selectedStock.Name }}</h3>
-                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" />(單位:股)
+                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" :min="1"/>
+                <p>金額: {{ tradeQuantity * this.stockCurrentPrice[selectedStock.stockCode]}}</p>
+                <p>手續費(0.1425%): {{ countServiceCharge(tradeQuantity * this.stockCurrentPrice[selectedStock.stockCode]) }}</p>
+                <p>(單位:1000股 等於一張)</p>
+                <p v-if="buyOrSellUrl=='/sellStock'">證券交易稅(0.3%): {{countTax(tradeQuantity * this.stockCurrentPrice[selectedStock.stockCode])  }}</p>
                 <button @click="buyOrSellStock(buyOrSellUrl,tradeQuantity,selectedStock.stockCode)">確認</button>
                 <button @click="closeTradeModal">取消</button>
             </div>
@@ -73,7 +77,7 @@
                 <p>正在處理，請稍候...</p>
             </div>
         </div>
-        <div v-if="isShowDetails" class="modal-stock-details">
+        <div v-if="isShowDetails" class="modal-stock-details" @click.self="closeDetailsModal">
             <div class="modal-content-stock-details">
                 <span class="close" @click="isShowDetails = false">&times;</span>
                 <div class="modal-body">
@@ -405,6 +409,13 @@ export default {
                 this.tradeQuantity = null;
             }
         },
+        countServiceCharge(price){
+            let p = (price*0.001425).toFixed();
+            return (p<20) ? 20 : p;
+        },
+        countTax(price){
+            return (price*0.003).toFixed();
+        }
     },
     created() {
         this.queryStockHolding();

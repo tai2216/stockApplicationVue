@@ -9,6 +9,8 @@
                     <th>股票代碼</th>
                     <th>數量</th>
                     <th>價格(每股)</th>
+                    <th>手續費</th>
+                    <th>證券交易稅</th>
                     <th>交易日期</th>
                     <th>交易類型</th>
                     <!-- <th>股票名稱</th> -->
@@ -20,8 +22,10 @@
                     <td>{{ trans.stockCode }}</td>
                     <td>{{ trans.quantity }}</td>
                     <td>{{ Math.abs(trans.price) }}</td>
+                    <td>{{ trans.serviceCharge }}</td>
+                    <td>{{ trans.tax }}</td>
                     <td>{{ trans.transactionDate }}</td>
-                    <td>{{ trans.transactionType }}</td>
+                    <td>{{ trans.transactionType=='BUY'? '買進':'賣出' }}</td>
                 </tr>
             </tbody>
             <tfoot>
