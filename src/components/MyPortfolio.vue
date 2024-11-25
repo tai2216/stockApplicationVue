@@ -9,10 +9,11 @@
                     <!-- <th @click="sortStocks('serialNo')">流水號<span v-if="sortKey === 'serialNo' | sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th> -->
                     <th @click="sortStocks('stockCode')">股票代碼<span v-if="sortKey === 'stockCode'| sortKey==''">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('stockName')">股票名稱<span v-if="sortKey === 'stockName'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
-                    <th @click="sortStocks('priceAverage')">平均價<span v-if="sortKey === 'priceAverage'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
-                    <th>現價</th>
                     <th @click="sortStocks('totalQuantity')">持股數量<span v-if="sortKey === 'totalQuantity'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <th @click="sortStocks('priceAverage')">平均持有成本(一股)<span v-if="sortKey === 'priceAverage'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
                     <th @click="sortStocks('totalCost')">總成本<span v-if="sortKey === 'totalCost'">{{ sortOrder === 1 ? '▼' : '▲' }}</span></th>
+                    <th>現價(一股)</th>
+                    <th>現價(一張)</th>
                     <th>損益</th>
                     <th></th>
                     <th></th>
@@ -23,10 +24,11 @@
                     <!-- <td>{{ stockHolding.serialNo }}</td> -->
                     <td>{{ stockHolding.stockCode }}</td>
                     <td>{{ stockHolding.stockName }}</td>
-                    <td>{{ stockHolding.priceAverage }}</td>
-                    <td>{{ this.stockCurrentPrice[stockHolding.stockCode] }}</td>
                     <td>{{ stockHolding.totalQuantity}}</td>
+                    <td>{{ stockHolding.priceAverage }}</td>
                     <td>{{ stockHolding.totalCost}}</td>
+                    <td>{{ this.stockCurrentPrice[stockHolding.stockCode]/1000 }}</td>
+                    <td>{{ this.stockCurrentPrice[stockHolding.stockCode] }}</td>
                     <td :class="getProfitLossClass((this.stockCurrentPrice[stockHolding.stockCode]*stockHolding.totalQuantity)-stockHolding.totalCost)">
                         {{(this.stockCurrentPrice[stockHolding.stockCode]*stockHolding.totalQuantity)-stockHolding.totalCost}}
                     </td>
@@ -40,8 +42,10 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="9">共 {{ stockHoldingObj.totalElements }} 檔股票， 總損益: 
+                    <td colspan="9">共 {{ stockHoldingObj.totalElements }} 檔股票， 頁面損益: 
                         <span :class="getProfitLossClass(this.stockTotalLoss)">{{ this.stockTotalLoss }}</span>
+                         ，總損益:
+                         <span :class="getProfitLossClass(this.stockTotalLossAllPage)">{{ this.stockTotalLossAllPage }}</span>
                     </td>
                 </tr>
             </tfoot> 
@@ -176,6 +180,7 @@ export default {
             stockHoldingPage:[],
             stockCurrentPrice:{},
             stockTotalLoss:0,
+            stockTotalLossAllPage:0,
             //
             stockHoldingDetailsObj:{},
             stockHoldingDetailsPage:[],
@@ -244,7 +249,7 @@ export default {
                 // console.log(JSON.stringify(response.data));
                 // console.log(JSON.stringify(response.data.data));
                 this.stockCurrentPrice = response.data.data;
-                this.setAndGetTotalLoss();
+                this.getTotalLossOnCurrentPage();
             }).catch((error)=>{
                 console.log('error:'+JSON.stringify(error.response));
             })
@@ -303,6 +308,7 @@ export default {
                 this.flashMessageType = 'success';
                 this.refreshAccountBalance();
                 this.queryStockHolding();
+                this.getTotalLoss();
             }).catch((error)=>{
                 console.error(JSON.stringify(error.response));
                 let err = error.response.data.error;
@@ -406,7 +412,8 @@ export default {
             // console.log(value);
             return value >= 0 ? 'profit' : 'loss';
         },
-        setAndGetTotalLoss(){
+        getTotalLossOnCurrentPage(){
+            this.stockTotalLoss = 0;
             for(let stockHolding of this.stockHoldingPage){
                 // console.log(stockHolding);
                 let curPrice = this.stockCurrentPrice[stockHolding.stockCode];
@@ -416,6 +423,35 @@ export default {
                 this.stockTotalLoss +=n;
             }
             return this.stockTotalLoss;
+        },
+        getTotalLoss(){
+            this.userId = localStorage.getItem('userId');
+            defAxios.get('/getStockHoldingTotalLoss',{
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Accept': 'application/json'
+                },
+                params: {
+                    userId: parseInt(this.userId)
+                }
+            }).then((response)=>{
+                console.log(JSON.stringify(response.data.data));
+                let lossObj = response.data.data;
+                this.stockTotalLossAllPage=0;
+                for(let stockHolding of lossObj.holdingList){
+                    // console.log(stockHolding);
+                    let curPrice = lossObj.stockNamesAndPrices[stockHolding.stockCode];
+                    let q = stockHolding.totalQuantity;
+                    let totalCost = stockHolding.totalCost;
+                    let n = (curPrice*q)-totalCost;
+                    this.stockTotalLossAllPage +=n;
+                }
+                return this.stockTotalLossAllPage;
+            }).catch((error)=>{
+                console.log('error:'+JSON.stringify(error.response));
+                // let err = error.response.error;
+                // this.accountBalance = error.response.message + (err!=null? err.toString():'');
+            });
         },
         validateQuantity() {
             if (typeof this.tradeQuantity != 'number' || isNaN(this.tradeQuantity) || this.tradeQuantity <= 0) {
@@ -460,6 +496,7 @@ export default {
     },
     created() {
         this.queryStockHolding();
+        this.getTotalLoss();
     }
 };
 </script>
