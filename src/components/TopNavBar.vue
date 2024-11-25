@@ -40,8 +40,8 @@
 <script>
     import axios from 'axios';
     const defAxios = axios.create({
-//   baseURL: 'http://localhost:8081',
-baseURL: '/api',
+//  baseURL: 'http://localhost:8081',
+    baseURL: '/api',
         timeout: 10000
     });
     export default {
@@ -103,6 +103,8 @@ baseURL: '/api',
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    z-index:1000;
+    border-bottom: 1px solid #e0e0e0; /* 添加底部邊框 */
 }
 .navbar-nav{
     list-style: none;
@@ -115,7 +117,7 @@ baseURL: '/api',
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     padding: 10px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -173,7 +175,7 @@ baseURL: '/api',
     padding: 5px 10px;
     border-radius: 5px;
     background-color: #007bff;
-    color: white;
+    /* color: white; */
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;

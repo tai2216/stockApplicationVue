@@ -69,7 +69,7 @@
             <div class="modal-content">
                 <h2>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}</h2>
                 <h3>{{ selectedStock.Name }}</h3>
-                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" :min="1"/>
+                <input class="input-quantity" type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" :min="1"/>
                 <p>金額: {{ tradeQuantity * this.stockCurrentPrice[selectedStock.stockCode]}}</p>
                 <p>手續費(0.1425%): {{ countServiceCharge(tradeQuantity * this.stockCurrentPrice[selectedStock.stockCode]) }}</p>
                 <p>(單位:1000股 等於一張)</p>
@@ -96,9 +96,9 @@
                                 <th >股票名稱</th>
                                 <th >持股數量</th>
                                 <th >交易日期</th>
-                                <th >價格</th>
+                                <th >買進價格</th>
                                 <th >現價</th>
-                                <th >總成本</th>
+                                <th >總成本(含手續費)</th>
                                 <th>損益</th>
                             </tr>
                         </thead>
@@ -548,15 +548,16 @@ export default {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    z-index: 1100;
 }
 
 .modal-content-stock-details {
     background-color: white;
     padding: 20px;
     border-radius: 10px;
-    width: 70%; /* 占用畫面百分之 70 的比例 */
-    max-height: 80%; /* 最大高度為畫面的 80% */
+    position: relative;
+    max-width:90%;
+    max-height: 90%; /* 最大高度為畫面的 90% */
     overflow-y: auto; /* 內容超出時顯示滾動條 */
 }
 

@@ -17,7 +17,7 @@
                     
                     <th>股票代碼</th>
                     <th>股票名稱</th>
-                    <th>收盤價(單位:一股)</th>
+                    <th>收盤價(單位:一張)</th>
                     <th>最後交易日</th>
                     <th></th>
                     <!-- <th></th> -->
@@ -63,7 +63,7 @@
             <div class="modal-content">
                 <h1>{{buyOrSellUrl=='/buyStock'?'買進':'賣出'}} {{ selectedStock.Code }}(零股交易)</h1>
                 <h3>{{ selectedStock.Name }}</h3>
-                <input type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" :min="1"/>
+                <input class="input-quantity" type="number" v-model.number="tradeQuantity" @input="validateQuantity" placeholder="輸入數量" :min="1"/>
                 <p>金額: {{ tradeQuantity * selectedStock.PreviousDayPrice}}</p>
                 <p>手續費(0.1425%): {{ countServiceCharge(tradeQuantity * selectedStock.PreviousDayPrice) }}</p>
                 <p>(單位:1000股 等於一張)</p>
