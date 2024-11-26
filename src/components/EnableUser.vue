@@ -4,7 +4,7 @@
             <div v-if="message" class="modal">
                 <div class="modal-content">
                     <div :style="{color:'red'}">{{ message }}
-                        <a href="/login">馬上登入</a>
+                        <a href="/">馬上登入</a>
                     </div>
                 </div>
             </div>

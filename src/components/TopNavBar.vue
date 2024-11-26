@@ -118,9 +118,11 @@
     justify-content: flex-end;
     align-items: center;
     background-color: #ffffff;
-    padding: 10px;
+    padding: 15px;
     border-radius: 10px;
+    border-color: #333;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-right: 5%;
 }
 .nav-item {
     margin-left: 20px;

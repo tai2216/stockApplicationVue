@@ -1,5 +1,5 @@
 <template>
-  <button class="scroll-to-top" @click="scrollToTop">TOP</button>
+  <button class="scroll-to-top" @click="scrollToTop">Top</button>
 </template>
 
 <script>
@@ -22,7 +22,7 @@ export default {
   border: none;
   border-radius: 50%;
   padding: 10px;
-  font-size: 15px; /* 調整字體大小 */
+  font-size: 30px; /* 調整字體大小 */
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   transition: background-color 0.3s, transform 0.3s;
